@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador cinético de lixiviación de oro – Planta CIL 200 t/d</title>
+<style>:root{
+  --bg:#f5f5f2; --surface:#fcfcfb; --surface-2:#f0efea; --line:#dcdad3; --line-2:#e9e7e1;
+  --ink:#151513; --ink-2:#52514e; --ink-3:#7c7a74; --accent:#1f4f8f; --accent-2:#e6eef9;
+  --inf:#1f5fbf; --inf-bg:#e7f0fc; --calc:#36613a; --calc-bg:#e6f1e5; --usr:#5b4bb8; --usr-bg:#eeebfb;
+  --hip:#8a5a00; --hip-bg:#fcf1d9; --lib:#7a2f6b; --lib-bg:#f8e8f3; --aju:#0e6c6c; --aju-bg:#e0f3f2;
+  --ok:#2f7d32; --warn:#a86500; --bad:#b3261e;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+  --radius:8px; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+header.top{background:#14233a;color:#f3f1ea;padding:18px 24px 14px}
+header.top h1{margin:0;font-size:20px;font-weight:650;letter-spacing:.1px}
+header.top p{margin:4px 0 0;color:#c9cdd6;font-size:13px}
+.badges-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.badges-legend .b{font-size:11px}
+nav.tabs{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;overflow-x:auto;padding:0 12px}
+nav.tabs button{appearance:none;border:0;background:none;padding:12px 14px;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs button .n{display:inline-block;min-width:18px;height:18px;border-radius:9px;background:var(--surface-2);color:var(--ink-2);font-size:11px;line-height:18px;text-align:center;margin-right:6px}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+nav.tabs button.on .n{background:var(--accent);color:#fff}
+main{max-width:1320px;margin:0 auto;padding:18px 20px 60px}
+section.mod{display:none}
+section.mod.on{display:block}
+h2{font-size:18px;margin:4px 0 4px}
+h3{font-size:15px;margin:18px 0 8px}
+p.lead{color:var(--ink-2);margin:0 0 14px;max-width:980px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:980px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.card h3:first-child{margin-top:0}
+fieldset{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:10px 14px 6px;margin:0}
+legend{font-weight:600;font-size:13px;padding:0 6px;color:var(--ink)}
+.prm{display:grid;grid-template-columns:minmax(150px,1.25fr) 86px minmax(90px,1fr) 88px;gap:6px 10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line-2)}
+.prm:last-child{border-bottom:0}
+.prm label{font-size:13px}
+.prm .unit{font-size:11.5px;color:var(--ink-3)}
+.prm input[type=range]{width:100%;accent-color:var(--accent)}
+.prm input[type=number],.prm select{width:100%;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px;background:#fff}
+.prm .ref{grid-column:1/-1;font-size:11px;color:var(--ink-3);margin-top:-4px}
+.b{display:inline-block;font-size:10.5px;font-weight:650;letter-spacing:.3px;padding:1px 6px;border-radius:10px;border:1px solid transparent;white-space:nowrap}
+.b.INF{color:var(--inf);background:var(--inf-bg);border-color:#c6dbf7}
+.b.CALC{color:var(--calc);background:var(--calc-bg);border-color:#c8e0c6}
+.b.USR{color:var(--usr);background:var(--usr-bg);border-color:#d8d1f6}
+.b.HIP{color:var(--hip);background:var(--hip-bg);border-color:#f1dca8}
+.b.LIB{color:var(--lib);background:var(--lib-bg);border-color:#ecc9e2}
+.b.AJU{color:var(--aju);background:var(--aju-bg);border-color:#bfe5e3}
+.b.MOD{color:#3d3d3a;background:#ececea;border-color:#d6d6d2}
+.b.SIM{color:#8a5a00;background:#fff6e0;border-color:#f1dca8}
+.b.CONST{color:#555;background:#f1f1f1;border-color:#ddd}
+.banner{border-radius:var(--radius);padding:10px 14px;margin:0 0 14px;font-size:13px;border:1px solid}
+.banner.warn{background:#fff6e0;border-color:#f1dca8;color:#5f3e00}
+.banner.info{background:var(--accent-2);border-color:#c6d7f0;color:#173b6c}
+.banner.bad{background:#fdecea;border-color:#f3c2bd;color:#7a1a13}
+.banner.ok{background:#e9f4e9;border-color:#c8e0c6;color:#1f4d22}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line-2);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--ink-2);background:var(--surface-2);position:sticky;top:0}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tablewrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
+.kpi .l{font-size:12px;color:var(--ink-2)}
+.kpi .v{font-size:22px;font-weight:650;font-variant-numeric:tabular-nums;margin:2px 0}
+.kpi .u{font-size:12px;color:var(--ink-3);font-weight:400}
+.kpi .t{margin-top:2px}
+.btn{appearance:none;border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 11px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.btn:hover{border-color:#b9b6ad;background:#fafaf8}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#173e72}
+.btn.sm{padding:3px 8px;font-size:11.5px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.muted{color:var(--ink-3)}
+.small{font-size:12px}
+.eq{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-size:15px;background:var(--surface-2);border-radius:6px;padding:6px 10px;display:inline-block;margin:4px 0}
+.model-card{border-left:4px solid var(--c,#888)}
+.model-card .hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.model-card .hd h3{margin:0;font-size:15px}
+.model-card details{margin-top:6px}
+.model-card summary{cursor:pointer;font-size:12.5px;color:var(--accent);font-weight:600}
+.model-card ul{margin:4px 0 4px 18px;padding:0;font-size:12.5px}
+.model-card.disabled{opacity:.75;border-left-color:#bbb;background:#f7f7f5}
+.status{font-size:11px;font-weight:650;padding:1px 7px;border-radius:10px}
+.status.aplicable{background:#e6f1e5;color:#2f6b33}
+.status.condicional{background:#fff2d6;color:#8a5a00}
+.status.aproximado{background:#fff2d6;color:#8a5a00}
+.status.semiempírico,.status.empírico,.status.derivado{background:#ececea;color:#45443f}
+.status.excluido{background:#fdecea;color:#9b2219}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px 8px;position:relative}
+.chart .ct{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.chart .ct h4{margin:0;font-size:13.5px;font-weight:600}
+.chart .ct .sub{font-size:11.5px;color:var(--ink-3)}
+.chart .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-2);margin:6px 0 2px}
+.chart .legend span{display:inline-flex;align-items:center;gap:6px}
+.chart > svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .legend svg{display:inline-block;flex:none}
+.tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.08);display:none;z-index:5;min-width:150px}
+.tip .h{font-weight:600;margin-bottom:3px}
+.tip .r{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.tip .sw{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.checks li{margin:3px 0}
+.checks .okk{color:var(--ok);font-weight:650}
+.checks .wr{color:var(--warn);font-weight:650}
+.checks .bd{color:var(--bad);font-weight:650}
+textarea{width:100%;min-height:150px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:6px;padding:8px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#14233a;color:#fff;padding:9px 14px;border-radius:8px;font-size:13px;display:none;z-index:50;max-width:90vw}
+.pill{display:inline-block;padding:2px 8px;border-radius:12px;background:var(--surface-2);font-size:12px}
+.mat td,.mat th{text-align:center}
+.mat td:first-child,.mat th:first-child{text-align:left}
+code{font-family:var(--mono);font-size:12px;background:var(--surface-2);padding:1px 4px;border-radius:4px}
+.help h3{margin-top:22px}
+.help p,.help li{max-width:980px}
+.inline-select{padding:4px 6px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:13px;background:#fff}
+
+.checks{list-style:none;padding-left:0}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Simulador cinético de la lixiviación de oro por cianuración</h1>
+  <p>Planta CIL de 200 t/d (mineral tipo Vetas, Santander) · Modelos de <i>Kinetics of Metallurgical Processes</i> (Ray &amp; Ray, 2018), caps. 1–6 · Proyecto: L. Villamil, C. Quitian, D. Ávila</p>
+  <p id="statusbar" style="margin-top:8px;color:#e9ecf2"></p>
+</header>
+<nav class="tabs" id="tabs"></nav>
+<main>
+  <section class="mod" id="m1"></section>
+  <section class="mod" id="m2"></section>
+  <section class="mod" id="m3"></section>
+  <section class="mod" id="m4"></section>
+  <section class="mod" id="m5"></section>
+  <section class="mod" id="m6"></section>
+  <section class="mod" id="m7"></section>
+  <section class="mod" id="m8"></section>
+  <section class="mod help" id="m9">
+    <h2>Ayuda · Instrucciones de uso y fundamentos</h2>
+    <h3>Requisitos y ejecución</h3>
+    <ul>
+      <li>No requiere instalación ni conexión a internet: es un único archivo HTML con todo el código (JavaScript puro, sin bibliotecas externas). Funciona en Chrome, Edge, Firefox o Safari recientes.</li>
+      <li>Para usarlo localmente, abra <code>index.html</code> con doble clic. Para publicarlo, súbalo a un repositorio de GitHub y active GitHub Pages (Settings → Pages → rama <code>main</code>, carpeta raíz).</li>
+      <li>El núcleo de cálculo (<code>model.js</code>) también corre en Node.js: <code>node tests.js</code> ejecuta las pruebas de funcionamiento.</li>
+    </ul>
+    <h3>Flujo de trabajo recomendado</h3>
+    <ol>
+      <li><b>Módulo 1</b>: revise los parámetros. Los marcados INFORME vienen del informe; los HIPOTÉTICOS deben sustituirse cuando existan datos.</li>
+      <li><b>Módulo 2</b>: elija los modelos que va a comparar y el principal. Lea las suposiciones y las limitaciones de cada uno.</li>
+      <li><b>Módulos 3 y 4</b>: consulte los valores en cualquier tiempo y las gráficas interactivas.</li>
+      <li><b>Módulo 5</b>: haga barridos de una variable (O₂, CN⁻, P80, temperatura, agitación, capacidad, tanques) y guarde escenarios para compararlos.</li>
+      <li><b>Módulo 6</b>: cuando tenga ensayos de botella, cargue el CSV, ajuste las constantes y use la constante del mejor modelo en la simulación.</li>
+      <li><b>Módulos 7 y 8</b>: verifique el balance de oro y exporte los resultados.</li>
+    </ol>
+    <h3>Datos que debe introducir el usuario</h3>
+    <ul>
+      <li><b>Datos experimentales</b> (módulo 6): <code>tiempo, extraccion</code>; opcionalmente <code>ensayo, T_C, d_um</code>. Ejemplo:<br><code>ensayo,T_C,tiempo,extraccion</code><br><code>A,25,2,31.5</code></li>
+      <li><b>Tamaño de grano de oro</b>: obtenerlo por mineralogía (MLA/QEMSCAN) o por análisis granulométrico de la gravimetría.</li>
+      <li><b>Energía de activación</b>: obtenerla con ensayos a 2 o 3 temperaturas (Arrhenius en el módulo 6).</li>
+      <li><b>Espesor de capa límite δ</b>: no se mide directamente; se infiere del efecto de la agitación sobre k.</li>
+    </ul>
+    <h3>Ecuaciones implementadas</h3>
+    <table>
+      <tr><th>Concepto</th><th>Ecuación</th><th>Fuente</th></tr>
+      <tr><td>Grado de reacción</td><td>α = (C₀ − C)/(C₀ − C∞); X = α∞·α</td><td>Cap. 2 Ec. 2.11</td></tr>
+      <tr><td>Forma general</td><td>g(α) = k·t ; dα/dt = k/g′(α) = k·f(α)</td><td>Cap. 2 Ec. 2.17–2.18</td></tr>
+      <tr><td>Arrhenius</td><td>k = A·exp(−E/RT)</td><td>Cap. 1 Ec. 1.6</td></tr>
+      <tr><td>Interfacial / película, esfera</td><td>1 − (1−α)¹ᐟ³ = k·t, con k = k″/(ρ·r₀)</td><td>Cap. 3 Ec. 3.15, 3.20</td></tr>
+      <tr><td>Flujo de cianuración</td><td>R/A = 2·D_O₂[O₂]·D_CN[CN⁻] / (δ·(D_CN[CN⁻] + 4·D_O₂[O₂]))</td><td>Cap. 5 Ec. 5.23</td></tr>
+      <tr><td>Retroceso del grano</td><td>dr/dt = −(M_Au/ρ_Au)·(R/A)</td><td>Cap. 3 Ec. 3.12, 3.22</td></tr>
+      <tr><td>Ginstling–Brounshtein</td><td>1 − 2α/3 − (1−α)²ᐟ³ = 2·M·D·C·t/(β·ρ·r₀²)</td><td>Cap. 4 Ec. 4.23</td></tr>
+      <tr><td>Jander</td><td>[1 − (1−α)¹ᐟ³]² = k·t</td><td>Cap. 4 Ec. 4.10</td></tr>
+      <tr><td>Primer orden</td><td>−ln(1−α) = k·t</td><td>Cap. 2 Ec. 2.16; Cap. 3 Ec. 3.37</td></tr>
+      <tr><td>Johnson–Mehl</td><td>[−ln(1−α)]¹ᐟⁿ = k′·t</td><td>Cap. 2 Ec. 2.39</td></tr>
+      <tr><td>Mixto (derivado)</td><td>dα/dt = 1 / [g′R(α)/kR + g′D(α)/kD]</td><td>Cap. 3 Ec. 3.11 + Cap. 4 Ec. 4.13 en serie</td></tr>
+      <tr><td>Tiempo de residencia</td><td>t = n·V_útil / Q_pulpa ; Q = (M/ρs + M(1−x)/(x·ρw))/24</td><td>Balance del informe §13.1</td></tr>
+      <tr><td>Balance de oro</td><td>m₀ = m_d + m_r ; m_d = m₀·X(t) ; C = m_d/V_sol</td><td>Informe §13.2</td></tr>
+    </table>
+    <h3>Métodos numéricos</h3>
+    <ul>
+      <li><b>Modelos separables</b> (R3, GB, Jander, F1, J–M) con k variable en el tiempo (perfil de cianuro): se integra K(t) = ∫k dt con la regla del trapecio y α = g⁻¹(K). La inversa de GB se obtiene por bisección; las demás son analíticas.</li>
+      <li><b>Modelo mixto</b>: Runge–Kutta de 4.º orden con 8 subpasos por intervalo.</li>
+      <li><b>Anclaje</b>: bisección sobre ln k hasta que X(t*) = X de diseño.</li>
+      <li><b>Ajuste</b>: Nelder–Mead sobre parámetros transformados (ln k, logit α∞), con varios arranques.</li>
+    </ul>
+    <h3>Limitaciones principales</h3>
+    <ul>
+      <li>No hay datos cinéticos experimentales: sin el módulo 6, todo resultado es una simulación exploratoria.</li>
+      <li>Conjunto monodisperso (el libro advierte que, con distribución de tamaños, no ajusta una ecuación simple), flujo pistón (no se modela la distribución de tiempos de residencia de los tanques en serie) y oxígeno disuelto constante.</li>
+      <li>No se modela la adsorción en carbón (no hay isotermas), ni el efecto del pH, ni el consumo de cianuro por la pirita.</li>
+    </ul>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script>/* Parámetros por defecto y su procedencia.
+ * src: 'INF' dato del informe · 'LIB' dato del libro · 'HIP' hipotético/ilustrativo · 'USR' decisión del usuario · 'CONST' constante física */
+(function (root) {
+  const DEFAULTS = {
+    basis: 'planta',
+    // --- Planta (informe §13, §7, §12) ---
+    tpd: 200, grade: 7.67, gravPct: 30, P80_um: 75, solidsPct: 45, rhoS: 2.75, rhoW: 1.0,
+    pH: 10.8, cn1: 0.35, cnN: 0.15, cnProfile: 'lineal', cnBasis: 'NaCN', o2: 8, T_C: 25, Tref_C: 25,
+    nPre: 2, vPre: 53, nCIL: 6, vCIL: 35, prelixCounts: false,
+    Xdesign: 93, solLoss_mgL: 0.02, effElu: 98, effEW: 99.5, effSmelt: 99.8, effGrav: 98,
+    carbonConc: 10, carbonLoad: 3000,
+    // --- Lote (ensayo de botella) ---
+    batchKg: 1, batchHours: 24, batchGrav: false,
+    // --- Cinética / hipotéticos ---
+    delta_um: 50, dAu_um: 42, alphaInf: 1, E_R: 15, E_D: 15, E_E: 15,
+    ordCN: 0, ordO2: 0, phi: 0.5, nJM: 0.7, r3mode: 'anchor', kSource: 'anchor',
+    tmaxFactor: 1.5
+  };
+  const META = {
+    tpd: { label: 'Capacidad de la planta', unit: 't/d (secas)', src: 'INF', ref: 'Informe §13', min: 50, max: 400, step: 1 },
+    grade: { label: 'Ley de cabeza de oro', unit: 'g/t', src: 'INF', ref: 'Informe §13', min: 0.5, max: 30, step: 0.01 },
+    gravPct: { label: 'Recuperación gravimétrica previa', unit: '% del Au', src: 'INF', ref: 'Informe §5, §13', min: 0, max: 60, step: 1 },
+    P80_um: { label: 'Tamaño de molienda P80 (partícula de mena)', unit: 'µm', src: 'INF', ref: 'Informe §5, §12', min: 20, max: 200, step: 1 },
+    solidsPct: { label: 'Sólidos en la pulpa', unit: '% en peso', src: 'INF', ref: 'Informe §6, §12', min: 25, max: 60, step: 1 },
+    rhoS: { label: 'Densidad del mineral', unit: 't/m³', src: 'INF', ref: 'Informe §13', min: 2.4, max: 3.5, step: 0.01 },
+    rhoW: { label: 'Densidad de la solución', unit: 't/m³', src: 'HIP', ref: 'Supuesto: agua', min: 0.98, max: 1.1, step: 0.01 },
+    pH: { label: 'pH', unit: '–', src: 'INF', ref: 'Informe §12 (10,5–11,5; consigna 10,8)', min: 9, max: 13, step: 0.1 },
+    cn1: { label: 'Cianuro libre – tanque 1 CIL', unit: 'g/L', src: 'INF', ref: 'Informe §7, §12 (0,30–0,40)', min: 0.02, max: 1.5, step: 0.01 },
+    cnN: { label: 'Cianuro libre – último tanque', unit: 'g/L', src: 'INF', ref: 'Informe §12 (mín. 0,15)', min: 0.01, max: 1.5, step: 0.01 },
+    o2: { label: 'Oxígeno disuelto', unit: 'mg/L', src: 'INF', ref: 'Informe §12 (6–8 aire; 15–20 O₂ puro)', min: 1, max: 25, step: 0.1 },
+    T_C: { label: 'Temperatura de la pulpa', unit: '°C', src: 'HIP', ref: 'Informe §12: 15–35 °C (ambiente). 25 °C es un valor central supuesto', min: 10, max: 45, step: 0.5 },
+    Tref_C: { label: 'Temperatura de referencia del anclaje', unit: '°C', src: 'HIP', ref: 'Supuesto: el informe da un rango, no un valor', min: 15, max: 35, step: 0.5 },
+    nPre: { label: 'Tanques de prelixiviación en servicio', unit: 'u', src: 'INF', ref: 'Informe §7', min: 0, max: 4, step: 1 },
+    vPre: { label: 'Volumen útil por tanque de prelixiviación', unit: 'm³', src: 'INF', ref: 'Informe §7 (59 total, 53 pulpa)', min: 10, max: 120, step: 1 },
+    nCIL: { label: 'Tanques CIL en servicio', unit: 'u', src: 'INF', ref: 'Informe §7', min: 1, max: 10, step: 1 },
+    vCIL: { label: 'Volumen útil por tanque CIL', unit: 'm³', src: 'INF', ref: 'Informe §7 (39 total, 35 pulpa)', min: 10, max: 120, step: 1 },
+    Xdesign: { label: 'Extracción de diseño en CIL (punto de anclaje)', unit: '%', src: 'INF', ref: 'Informe §13 (supuesto de diseño, no ensayo)', min: 50, max: 99.5, step: 0.1 },
+    solLoss_mgL: { label: 'Au en solución del relave', unit: 'mg/L', src: 'INF', ref: 'Informe §12–13', min: 0, max: 0.5, step: 0.005 },
+    effElu: { label: 'Eficiencia de elución', unit: '%', src: 'INF', ref: 'Informe §13', min: 80, max: 100, step: 0.1 },
+    effEW: { label: 'Eficiencia de electrodeposición', unit: '%', src: 'INF', ref: 'Informe §13', min: 80, max: 100, step: 0.1 },
+    effSmelt: { label: 'Eficiencia de fundición', unit: '%', src: 'INF', ref: 'Informe §13', min: 90, max: 100, step: 0.1 },
+    effGrav: { label: 'Eficiencia ruta gravimétrica (limpieza+fundición)', unit: '%', src: 'INF', ref: 'Informe §13', min: 80, max: 100, step: 0.1 },
+    carbonConc: { label: 'Concentración de carbón', unit: 'g/L', src: 'INF', ref: 'Informe §12 (10–15)', min: 0, max: 40, step: 0.5 },
+    carbonLoad: { label: 'Carga objetivo del carbón', unit: 'g Au/t C', src: 'INF', ref: 'Informe §12', min: 500, max: 8000, step: 50 },
+    batchKg: { label: 'Masa de mineral del lote', unit: 'kg', src: 'USR', ref: 'Ensayo de botella', min: 0.1, max: 1000, step: 0.1 },
+    batchHours: { label: 'Tiempo de lixiviación del lote', unit: 'h', src: 'USR', ref: '', min: 1, max: 96, step: 0.5 },
+    delta_um: { label: 'Espesor de capa límite δ (agitación)', unit: 'µm', src: 'HIP', ref: 'Cap. 5 p. 127: 20–90 µm según agitación', min: 20, max: 90, step: 1 },
+    dAu_um: { label: 'Diámetro de grano de oro', unit: 'µm', src: 'HIP', ref: 'No está en el informe; valor por defecto = implícito por Ec. 5.23 y el punto de diseño', min: 2, max: 150, step: 1 },
+    alphaInf: { label: 'Fracción lixiviable máxima α∞', unit: '–', src: 'HIP', ref: 'Cap. 2 Ec. 2.11 (C∞). Sin dato: 1', min: 0.5, max: 1, step: 0.005 },
+    E_R: { label: 'Energía de activación – película/interfacial', unit: 'kJ/mol', src: 'HIP', ref: 'Cap. 6 p. 164: difusión ≤ 20; reacción 40–400', min: 0, max: 120, step: 1 },
+    E_D: { label: 'Energía de activación – difusión en capa', unit: 'kJ/mol', src: 'HIP', ref: 'Cap. 6 p. 164 (valores intermedios para sólidos porosos)', min: 0, max: 120, step: 1 },
+    E_E: { label: 'Energía de activación – modelos empíricos', unit: 'kJ/mol', src: 'HIP', ref: 'Sin dato', min: 0, max: 120, step: 1 },
+    ordCN: { label: 'Orden empírico respecto a [CN⁻]', unit: '–', src: 'HIP', ref: 'Cap. 2 Ec. 2.3. Sin dato: 0', min: 0, max: 2, step: 0.05 },
+    ordO2: { label: 'Orden empírico respecto a [O₂]', unit: '–', src: 'HIP', ref: 'Cap. 2 Ec. 2.3. Sin dato: 0', min: 0, max: 2, step: 0.05 },
+    phi: { label: 'Fracción de resistencia difusiva en el diseño φ', unit: '–', src: 'HIP', ref: 'Modelo mixto, sin dato', min: 0.05, max: 0.95, step: 0.01 },
+    nJM: { label: 'Exponente n de Johnson–Mehl', unit: '–', src: 'HIP', ref: 'Cap. 2 Ec. 2.39', min: 0.3, max: 4, step: 0.05 },
+    tmaxFactor: { label: 'Horizonte de simulación', unit: '× t lixiviación', src: 'USR', ref: '', min: 1, max: 4, step: 0.1 }
+  };
+  const api = { DEFAULTS, META };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else Object.assign(root, api);
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>/* =====================================================================
+ * MODELO CINÉTICO DE LIXIVIACIÓN DE ORO — núcleo de cálculo
+ * Fundamento: H.S. Ray & S. Ray, Kinetics of Metallurgical Processes (2018),
+ * capítulos 1–6, e informe técnico del proyecto (planta CIL 200 t/d).
+ * Unidades internas: tiempo [h], k [h^-1], masa de oro [g], concentración [mg/L = g/m³]
+ * ===================================================================== */
+(function (root) {
+  'use strict';
+
+  // ---------- Constantes ----------
+  const CONST = {
+    R: 8.314,            // J/(mol·K)  constante universal de los gases
+    M_Au: 196.97,        // g/mol      masa atómica del oro (constante física de referencia)
+    rho_Au: 19.3,        // g/cm³      densidad del oro (constante física de referencia)
+    M_NaCN: 49.01,       // g/mol
+    M_CN: 26.02,         // g/mol
+    M_O2: 32.00,         // g/mol
+    D_CN: 1.83e-5,       // cm²/s  Cap. 5, p. 127 (texto tras Ec. 5.26)
+    D_O2: 2.76e-5,       // cm²/s  Cap. 5, p. 127
+    delta_min: 2e-3,     // cm     Cap. 5, p. 127: capa límite 2×10⁻³ – 9×10⁻³ cm según agitación
+    delta_max: 9e-3
+  };
+
+  // ---------- Funciones g(α) del libro ----------
+  // Cada modelo: g(α)=k·t ; gp = dg/dα ; inv = g⁻¹
+  const clamp01 = a => Math.min(Math.max(a, 0), 1);
+
+  function bisect(f, lo, hi, tol = 1e-13, it = 200) {
+    let flo = f(lo);
+    for (let i = 0; i < it; i++) {
+      const mid = 0.5 * (lo + hi), fm = f(mid);
+      if ((fm > 0) === (flo > 0)) { lo = mid; flo = fm; } else { hi = mid; }
+      if (hi - lo < tol) break;
+    }
+    return 0.5 * (lo + hi);
+  }
+
+  const G = {
+    // R3: Cap. 3 Ec. 3.15 / 3.17 (n=3) / 3.20 (conjunto monodisperso)
+    R3: {
+      g: a => 1 - Math.cbrt(1 - a),
+      gp: a => (1 / 3) * Math.pow(1 - a, -2 / 3),
+      inv: y => y >= 1 ? 1 : 1 - Math.pow(1 - y, 3),
+      gmax: 1
+    },
+    // D4 Ginstling–Brounshtein: Cap. 4 Ec. 4.23 → 1 − 2α/3 − (1−α)²ᐟ³ = k t
+    GB: {
+      g: a => 1 - 2 * a / 3 - Math.pow(1 - a, 2 / 3),
+      gp: a => (2 / 3) * (Math.pow(1 - a, -1 / 3) - 1),
+      inv: y => y >= 1 / 3 ? 1 : bisect(a => (1 - 2 * a / 3 - Math.pow(1 - a, 2 / 3)) - y, 0, 1),
+      gmax: 1 / 3
+    },
+    // D3 Jander: Cap. 4 Ec. 4.10 → [1 − (1−α)¹ᐟ³]² = k t
+    JA: {
+      g: a => Math.pow(1 - Math.cbrt(1 - a), 2),
+      gp: a => 2 * (1 - Math.cbrt(1 - a)) * (1 / 3) * Math.pow(1 - a, -2 / 3),
+      inv: y => y >= 1 ? 1 : 1 - Math.pow(1 - Math.sqrt(y), 3),
+      gmax: 1
+    },
+    // F1 primer orden: Cap. 2 Ec. 2.16 ; Cap. 3 Ec. 3.37 ; Cap. 5 Ec. 5.12
+    F1: {
+      g: a => -Math.log(1 - a),
+      gp: a => 1 / (1 - a),
+      inv: y => 1 - Math.exp(-y),
+      gmax: Infinity
+    },
+    // R2 y R1 (Cap. 3 Ec. 3.16, 3.17) — sólo para pruebas/tabla 2.2
+    R2: { g: a => 1 - Math.sqrt(1 - a), gp: a => 0.5 / Math.sqrt(1 - a), inv: y => y >= 1 ? 1 : 1 - (1 - y) ** 2, gmax: 1 },
+    // D1 parabólica (Cap. 4 Ec. 4.6): α² = k t — sólo pruebas
+    D1: { g: a => a * a, gp: a => 2 * a, inv: y => Math.min(1, Math.sqrt(y)), gmax: 1 }
+  };
+  // Johnson–Mehl (Cap. 2 Ec. 2.39): [−ln(1−α)]¹ᐟⁿ = k' t
+  function JM_g(a, n) { return Math.pow(-Math.log(1 - a), 1 / n); }
+  function JM_inv(y, n) { return 1 - Math.exp(-Math.pow(Math.max(y, 0), n)); }
+  // Mixto (derivado): t = τR·gR3(α) + τD·[3·gGB(α)]  — ver documento, sección 2.5
+  function gD(a) { return 1 - 3 * Math.pow(1 - a, 2 / 3) + 2 * (1 - a); } // = 3·gGB, vale 1 en α=1
+  function gDp(a) { return 2 * Math.pow(1 - a, -1 / 3) - 2; }
+
+  // ---------- Catálogo de modelos ----------
+  const MODELS = {
+    R3: {
+      id: 'R3', name: 'Núcleo decreciente – control interfacial / película (R3)', short: 'R3 núcleo decreciente',
+      eq: '1 − (1 − α)¹ᐟ³ = k·t', ref: 'Cap. 3, Ec. 3.15 (p. 65), 3.17 (p. 66), 3.20 (p. 67); Cap. 5, Ec. 5.23–5.26 (p. 127) y 5.67–5.69 (p. 138)',
+      status: 'aplicable', color: '#2a6fdb'
+    },
+    GB: {
+      id: 'GB', name: 'Difusión en capa de producto – Ginstling–Brounshtein (D4)', short: 'GB difusión capa',
+      eq: '1 − 2α/3 − (1 − α)²ᐟ³ = k·t', ref: 'Cap. 4, Ec. 4.11–4.23 (p. 86–88); §4.3.4 (p. 102)',
+      status: 'condicional', color: '#c2410c'
+    },
+    JA: {
+      id: 'JA', name: 'Difusión en capa de producto – Jander (D3)', short: 'Jander',
+      eq: '[1 − (1 − α)¹ᐟ³]² = k·t', ref: 'Cap. 4, Ec. 4.7–4.10 (p. 86); Ej. 4.1 (p. 92–93)',
+      status: 'aproximado', color: '#9333ea'
+    },
+    F1: {
+      id: 'F1', name: 'Primer orden / reacción interna total (F1)', short: 'Primer orden',
+      eq: '−ln(1 − α) = k·t', ref: 'Cap. 2, Ec. 2.15–2.16 (p. 21); Cap. 3, Ec. 3.37–3.38 (p. 73)',
+      status: 'semiempírico', color: '#0f766e'
+    },
+    MX: {
+      id: 'MX', name: 'Control mixto interfacial + capa de producto (derivado)', short: 'Mixto R3+GB',
+      eq: 't = τR·[1 − (1 − α)¹ᐟ³] + τD·[1 − 3(1 − α)²ᐟ³ + 2(1 − α)]', ref: 'Derivado de Cap. 3, Ec. 3.11 y Cap. 4, Ec. 4.13 en serie (Cap. 3, §3.1.2, p. 56)',
+      status: 'derivado', color: '#b45309'
+    },
+    JM: {
+      id: 'JM', name: 'Johnson–Mehl–Avrami (empírico)', short: 'Johnson–Mehl',
+      eq: '[−ln(1 − α)]¹ᐟⁿ = k′·t', ref: 'Cap. 2, Ec. 2.37–2.41 (p. 37–38)',
+      status: 'empírico', color: '#be185d'
+    }
+  };
+  const EXCLUDED = [
+    { name: 'Carter–Valensi', ref: 'Cap. 4, Ec. 4.35 (p. 91)', why: 'Requiere Z = volumen de producto formado / volumen de reactivo consumido. La disolución del oro produce Au(CN)₂⁻ soluble: no se forma producto sólido sobre el grano de oro y el informe no aporta densidades de una capa de producto, así que Z no puede definirse.' },
+    { name: 'Ley parabólica (placa plana)', ref: 'Cap. 4, Ec. 4.1–4.6 (p. 84–85)', why: 'Supone área de reacción constante (placa plana). Las partículas molidas (P80 = 75 µm) y los granos de oro son aproximadamente esféricos; el libro indica que la ley parabólica no se cumple para sólidos curvos (Cap. 4 §4.2.1).' },
+    { name: 'Interfacial placa / cilindro (R1, R2)', ref: 'Cap. 3, Ec. 3.10, 3.16 (p. 63–65)', why: 'Geometrías de placa o cilindro largo; el informe no aporta evidencia de morfología laminar o acicular del oro. Se usa la esfera (n = 3).' },
+    { name: 'Autocatalítico', ref: 'Cap. 2, Ec. 2.46–2.49 (p. 40)', why: 'Requiere que un producto catalice la reacción; no existe evidencia de ello en la cianuración descrita en el informe.' }
+  ];
+
+  // ---------- Química: flujo de Habashi/Wadsworth (Cap. 5, Ec. 5.23) ----------
+  // Entradas: CN en g/L (base NaCN o CN⁻), O2 en mg/L, δ en cm  →  mol/cm³
+  function cnMolarity(cn_gL, basis) { return cn_gL / (basis === 'CN' ? CONST.M_CN : CONST.M_NaCN); } // mol/L
+  function o2Molarity(o2_mgL) { return o2_mgL / 1000 / CONST.M_O2; } // mol/L
+  // R/A [mol Au /(cm² s)] = 2·D_O2·[O2]·D_CN·[CN] / (δ·(D_CN·[CN] + 4·D_O2·[O2]))
+  function fluxRA(cn_gL, o2_mgL, delta_cm, basis) {
+    const C = cnMolarity(cn_gL, basis) / 1000, O = o2Molarity(o2_mgL) / 1000; // mol/cm³
+    const a = CONST.D_CN * C, b = 4 * CONST.D_O2 * O;
+    if (a + b <= 0) return 0;
+    return 2 * CONST.D_O2 * O * CONST.D_CN * C / (delta_cm * (a + b));
+  }
+  // Misma combinación sin δ: para la escala de los modelos de difusión en capa porosa
+  function concPhi(cn_gL, o2_mgL, basis) {
+    const C = cnMolarity(cn_gL, basis) / 1000, O = o2Molarity(o2_mgL) / 1000;
+    const a = CONST.D_CN * C, b = 4 * CONST.D_O2 * O;
+    if (a + b <= 0) return 0;
+    return 2 * CONST.D_O2 * O * CONST.D_CN * C / (a + b);
+  }
+  function regime(cn_gL, o2_mgL, basis) {
+    const C = cnMolarity(cn_gL, basis), O = o2Molarity(o2_mgL);
+    const ratio = O > 0 ? C / O : Infinity;
+    const crit = 4 * CONST.D_O2 / CONST.D_CN; // Ec. 5.26: D_CN[CN] = 4 D_O2[O2]
+    const shareO2 = (CONST.D_CN * C) / (CONST.D_CN * C + 4 * CONST.D_O2 * O); // peso del control por O2
+    let label;
+    if (shareO2 > 0.8) label = 'Controlado por difusión de O₂ (Ec. 5.25)';
+    else if (shareO2 < 0.2) label = 'Controlado por difusión de CN⁻ (Ec. 5.24)';
+    else label = 'Control conjunto O₂/CN⁻ (Ec. 5.23)';
+    return { ratio, crit, shareO2, label };
+  }
+  // Velocidad de retroceso del radio del grano de oro (Cap. 3 Ec. 3.12/3.22): dr/dt = −(M/ρ)·(R/A)
+  function recessionRate_um_h(cn, o2, delta, basis) {
+    return fluxRA(cn, o2, delta, basis) * CONST.M_Au / CONST.rho_Au * 1e4 * 3600; // µm/h
+  }
+
+  // ---------- Perfil de cianuro a lo largo del circuito ----------
+  // Flujo pistón: la edad t del elemento de pulpa equivale a su posición en la cascada.
+  function cnAt(t, p) {
+    if (p.cnProfile !== 'lineal' || !(p.tLeach > 0)) return p.cn1;
+    const f = Math.min(Math.max(t / p.tLeach, 0), 1);
+    return p.cn1 + (p.cnN - p.cn1) * f;
+  }
+  function arrh(p, E_kJ) {
+    const T = p.T_C + 273.15, Tr = p.Tref_C + 273.15;
+    return Math.exp(-(E_kJ * 1000) / CONST.R * (1 / T - 1 / Tr));
+  }
+
+  // Factor de escala S(t) de cada constante respecto de la condición de referencia (informe)
+  function scaleR(t, p, ref) { // R3 y parte interfacial del mixto
+    const num = fluxRA(cnAt(t, p), p.o2, p.delta_um * 1e-4, p.cnBasis);
+    const den = fluxRA(ref.cn1, ref.o2, ref.delta_um * 1e-4, ref.cnBasis); // referencia fija: [CN] del tanque 1
+    return (den > 0 ? num / den : 0) * (ref.dAu_um / p.dAu_um) * arrh(p, p.E_R);
+  }
+  function scaleD(t, p, ref) { // GB, Jander y parte difusiva del mixto: k ∝ D_e·C / r0² (Ec. 4.23)
+    const num = concPhi(cnAt(t, p), p.o2, p.cnBasis), den = concPhi(ref.cn1, ref.o2, ref.cnBasis);
+    return (den > 0 ? num / den : 0) * Math.pow(ref.P80_um / p.P80_um, 2) * arrh(p, p.E_D);
+  }
+  function scaleE(t, p, ref) { // F1 y JM: órdenes empíricos (Cap. 2 Ec. 2.3), sin efecto de tamaño (Cap. 4 p. 94)
+    const c = cnAt(t, p) / ref.cn1, o = p.o2 / ref.o2;
+    return Math.pow(c, p.ordCN) * Math.pow(o, p.ordO2) * arrh(p, p.E_E);
+  }
+
+  // ---------- Integración ----------
+  // Para modelos separables dα/dt = k(t)·f(α) con f = 1/g′ se cumple exactamente g(α(t)) = ∫₀ᵗ k dt′.
+  // La integral de k se evalúa con la regla del trapecio en la malla de tiempos (exacta si k es constante).
+  function timeGrid(tmax, n) { const a = []; for (let i = 0; i <= n; i++) a.push(tmax * i / n); return a; }
+
+  function simulate(modelId, p, ref, kp, ts) {
+    // kp: parámetros cinéticos {k, kR, kD, n, mode} ya resueltos para la condición de referencia
+    const N = ts.length, alpha = new Float64Array(N), rate = new Float64Array(N), kEff = new Float64Array(N);
+    if (modelId === 'MX') return simulateMixed(p, ref, kp, ts);
+    const sFun = modelId === 'R3' ? scaleR : (modelId === 'F1' || modelId === 'JM') ? scaleE : scaleD;
+    let K = 0, prevk = null;
+    for (let i = 0; i < N; i++) {
+      let k;
+      if (modelId === 'R3' && kp.mode === 'habashi') {
+        // k(t) = (M/ρ r0)·(R/A)(t)·Arrhenius   [Cap. 3 Ec. 3.15 con k/ρ = (M/ρ)(R/A)]
+        const r0_cm = p.dAu_um * 1e-4 / 2;
+        k = fluxRA(cnAt(ts[i], p), p.o2, p.delta_um * 1e-4, p.cnBasis) * CONST.M_Au / (CONST.rho_Au * r0_cm) * 3600 * arrh(p, p.E_R);
+      } else {
+        k = kp.k * sFun(ts[i], p, ref);
+      }
+      kEff[i] = k;
+      if (i > 0) K += 0.5 * (k + prevk) * (ts[i] - ts[i - 1]);
+      prevk = k;
+      let a;
+      if (modelId === 'JM') a = JM_inv(K, kp.n);
+      else a = G[modelId].inv(K);
+      alpha[i] = clamp01(a);
+      // velocidad instantánea dα/dt = k(t)/g′(α)
+      if (modelId === 'JM') {
+        const n = kp.n; rate[i] = K > 0 ? n * Math.pow(K, n - 1) * k * Math.exp(-Math.pow(K, n)) : (n < 1 ? Infinity : (n === 1 ? k : 0));
+      } else {
+        const gp = G[modelId].gp(alpha[i]);
+        rate[i] = alpha[i] >= 1 ? 0 : (gp > 0 ? k / gp : Infinity);
+      }
+    }
+    return { alpha, rate, kEff };
+  }
+
+  // Mixto: dα/dt = 1 / [gR′(α)/kR(t) + gD′(α)/kD(t)]  (resistencias en serie) — Runge–Kutta 4
+  function simulateMixed(p, ref, kp, ts) {
+    const N = ts.length, alpha = new Float64Array(N), rate = new Float64Array(N), kEff = new Float64Array(N);
+    const F = (t, a) => {
+      if (a >= 1) return 0;
+      const kR = kp.kR * scaleR(t, p, ref), kD = kp.kD * scaleD(t, p, ref);
+      const res = G.R3.gp(a) / kR + gDp(a) / kD;
+      return res > 0 ? 1 / res : 0;
+    };
+    let a = 0;
+    alpha[0] = 0; rate[0] = F(ts[0], 0); kEff[0] = kp.kR * scaleR(ts[0], p, ref);
+    for (let i = 1; i < N; i++) {
+      const t0 = ts[i - 1], h = ts[i] - t0;
+      const sub = 8; const hh = h / sub; // sub-pasos para precisión
+      for (let s = 0; s < sub; s++) {
+        const tt = t0 + s * hh;
+        const k1 = F(tt, a), k2 = F(tt + hh / 2, clamp01(a + hh * k1 / 2)), k3 = F(tt + hh / 2, clamp01(a + hh * k2 / 2)), k4 = F(tt + hh, clamp01(a + hh * k3));
+        a = clamp01(a + hh * (k1 + 2 * k2 + 2 * k3 + k4) / 6);
+      }
+      alpha[i] = a; rate[i] = F(ts[i], a); kEff[i] = kp.kR * scaleR(ts[i], p, ref);
+    }
+    return { alpha, rate, kEff };
+  }
+
+  // ---------- Calibración al punto de diseño (anclaje) ----------
+  // Resuelve k tal que α∞·α(t*) = X* en condición de referencia (perfil de CN incluido) — bisección en ln k
+  function anchorK(modelId, ref, X_target, t_anchor, extra) {
+    const aStar = X_target / ref.alphaInf;
+    if (!(aStar > 0 && aStar < 1)) return { ok: false, msg: 'La extracción de diseño debe ser menor que α∞.' };
+    const ts = timeGrid(t_anchor, 400);
+    if (modelId === 'MX') {
+      // τR·gR(α*) = (1−φ)·t*  y  τD·gD(α*) = φ·t*  (constantes en condición de referencia sin perfil)
+      // con perfil de CN se reescala por bisección sobre un factor común
+      const phi = extra.phi;
+      const kR0 = G.R3.g(aStar) / ((1 - phi) * t_anchor), kD0 = gD(aStar) / (phi * t_anchor);
+      const f = lf => { const s = Math.exp(lf); const r = simulateMixed(ref, ref, { kR: kR0 * s, kD: kD0 * s }, ts); return r.alpha[r.alpha.length - 1] - aStar; };
+      const lf = bisect(f, -8, 8, 1e-12);
+      const s = Math.exp(lf);
+      return { ok: true, kR: kR0 * s, kD: kD0 * s };
+    }
+    const f = lk => { const r = simulate(modelId, ref, ref, { k: Math.exp(lk), n: extra.n, mode: 'anchor' }, ts); return r.alpha[r.alpha.length - 1] - aStar; };
+    const lk = bisect(f, -30, 15, 1e-12);
+    return { ok: true, k: Math.exp(lk) };
+  }
+
+  // Tamaño de grano de oro que, con el flujo de Ec. 5.23, reproduce el punto de diseño (perfil de referencia)
+  function impliedGoldSize(ref, X_target, t_anchor) {
+    const aStar = X_target / ref.alphaInf;
+    const ts = timeGrid(t_anchor, 400);
+    let I = 0, prev = null; // ∫ (M/ρ)(R/A) dt  [cm]
+    for (let i = 0; i < ts.length; i++) {
+      const v = fluxRA(cnAt(ts[i], ref), ref.o2, ref.delta_um * 1e-4, ref.cnBasis) * CONST.M_Au / CONST.rho_Au * 3600; // cm/h
+      if (i > 0) I += 0.5 * (v + prev) * (ts[i] - ts[i - 1]);
+      prev = v;
+    }
+    const r0_cm = I / G.R3.g(aStar);
+    return 2 * r0_cm * 1e4; // diámetro µm
+  }
+
+  // ---------- Balance de oro (por paso de tiempo) ----------
+  function basisFromParams(p) {
+    // Devuelve masa de mineral, oro alimentado a lixiviación, volumen de solución
+    const solids = p.solidsPct / 100;
+    if (p.basis === 'planta') {
+      const ore_t = p.tpd;                                 // t/d secas
+      const auFeed = ore_t * p.grade;                      // g/d
+      const auGrav = auFeed * p.gravPct / 100;             // g/d
+      const auLeach = auFeed - auGrav;                     // g/d
+      const water_m3 = ore_t * (1 - solids) / solids / p.rhoW; // m³/d
+      const pulp_m3 = ore_t / p.rhoS + water_m3;          // m³/d
+      const Q_h = pulp_m3 / 24;                            // m³/h
+      return { ore_t, auFeed, auGrav, auLeach, water_m3, pulp_m3, Q_h, unitMass: 'g/d', unitRate: 'g/(d·h)' };
+    } else {
+      const ore_t = p.batchKg / 1000;
+      const auFeed = ore_t * p.grade;
+      const auGrav = p.batchGrav ? auFeed * p.gravPct / 100 : 0;
+      const auLeach = auFeed - auGrav;
+      const water_m3 = ore_t * (1 - solids) / solids / p.rhoW;
+      const pulp_m3 = ore_t / p.rhoS + water_m3;
+      return { ore_t, auFeed, auGrav, auLeach, water_m3, pulp_m3, Q_h: null, unitMass: 'g', unitRate: 'g/h' };
+    }
+  }
+  function residenceTimes(p) {
+    const b = basisFromParams(p);
+    if (p.basis !== 'planta') return { tPre: 0, tCIL: p.batchHours, tLeach: p.batchHours, b };
+    const tPre = (p.nPre * p.vPre) / b.Q_h, tCIL = (p.nCIL * p.vCIL) / b.Q_h;
+    const tLeach = tCIL + (p.prelixCounts ? tPre : 0);
+    return { tPre, tCIL, tLeach, b };
+  }
+  function pulpDensity(p) { const x = p.solidsPct / 100; return 1 / (x / p.rhoS + (1 - x) / p.rhoW); }
+
+  function goldSeries(alpha, alphaInf, b) {
+    const N = alpha.length, X = new Float64Array(N), mDis = new Float64Array(N), mRes = new Float64Array(N), C = new Float64Array(N);
+    let maxErr = 0;
+    for (let i = 0; i < N; i++) {
+      X[i] = alphaInf * alpha[i];
+      mDis[i] = b.auLeach * X[i];
+      mRes[i] = b.auLeach - mDis[i];
+      C[i] = b.water_m3 > 0 ? mDis[i] / b.water_m3 : 0; // g/m³ = mg/L (equivalente sin adsorción)
+      maxErr = Math.max(maxErr, Math.abs(b.auLeach - mDis[i] - mRes[i]));
+    }
+    return { X, mDis, mRes, C, maxErr };
+  }
+
+  // Cadena aguas abajo del informe (§13.2)
+  function plantBalance(p, X) {
+    const b = basisFromParams(p);
+    const dis = b.auLeach * X, res = b.auLeach - dis;
+    const solLoss = Math.min(dis, p.solLoss_mgL * b.water_m3); // g/d
+    const carbon = dis - solLoss;
+    const elu = carbon * p.effElu / 100, ew = elu * p.effEW / 100, smeltC = ew * p.effSmelt / 100;
+    const gravDore = b.auGrav * p.effGrav / 100;
+    const prod = gravDore + smeltC;
+    const recovery = b.auFeed > 0 ? prod / b.auFeed : 0;
+    const carbonPerDay = p.carbonLoad > 0 ? carbon / p.carbonLoad : 0; // t/d
+    return {
+      feed: b.auFeed, grav: b.auGrav, leachFeed: b.auLeach, leachGrade: b.ore_t > 0 ? b.auLeach / b.ore_t : 0,
+      dissolved: dis, residue: res, residueGrade: b.ore_t > 0 ? res / b.ore_t : 0, solLoss, carbon, elu, ew, smeltC, gravDore, prod, recovery,
+      closureLeach: b.auLeach - dis - res, closurePlant: b.auFeed - b.auGrav - dis - res,
+      carbonPerDay, water: b.water_m3, pulp: b.pulp_m3, ore: b.ore_t,
+      cnStoich_kg: dis / CONST.M_Au * 2 * CONST.M_NaCN / 1000,  // Ec. 5.16: 2 CN⁻ por Au
+      o2Stoich_kg: dis / CONST.M_Au / 2 * CONST.M_O2 / 1000      // Ec. 5.15: 1 O₂ por 2 Au
+    };
+  }
+
+  // ---------- Ajuste de parámetros (Módulo 6) ----------
+  function modelAlphaConst(modelId, t, prm) { // condición constante (ensayo de laboratorio)
+    switch (modelId) {
+      case 'R3': return G.R3.inv(prm.k * t);
+      case 'GB': return G.GB.inv(prm.k * t);
+      case 'JA': return G.JA.inv(prm.k * t);
+      case 'F1': return G.F1.inv(prm.k * t);
+      case 'JM': return JM_inv(prm.k * t, prm.n);
+      case 'MX': return bisect(a => prm.tR * G.R3.g(a) + prm.tD * gD(a) - t, 0, 1 - 1e-15);
+    }
+  }
+  function nelderMead(f, x0, step, iters = 600) {
+    const n = x0.length; let pts = [x0.slice()];
+    for (let i = 0; i < n; i++) { const x = x0.slice(); x[i] += step[i]; pts.push(x); }
+    let vals = pts.map(f);
+    for (let it = 0; it < iters; it++) {
+      const idx = vals.map((v, i) => i).sort((a, b) => vals[a] - vals[b]);
+      pts = idx.map(i => pts[i]); vals = idx.map(i => vals[i]);
+      if (Math.abs(vals[n] - vals[0]) < 1e-14 * (1 + Math.abs(vals[0]))) break;
+      const c = new Array(n).fill(0);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) c[j] += pts[i][j] / n;
+      const xr = c.map((cj, j) => cj + (cj - pts[n][j])), fr = f(xr);
+      if (fr < vals[0]) {
+        const xe = c.map((cj, j) => cj + 2 * (cj - pts[n][j])), fe = f(xe);
+        if (fe < fr) { pts[n] = xe; vals[n] = fe; } else { pts[n] = xr; vals[n] = fr; }
+      } else if (fr < vals[n - 1]) { pts[n] = xr; vals[n] = fr; }
+      else {
+        const xc = c.map((cj, j) => cj + 0.5 * (pts[n][j] - cj)), fc = f(xc);
+        if (fc < vals[n]) { pts[n] = xc; vals[n] = fc; }
+        else { for (let i = 1; i <= n; i++) { pts[i] = pts[i].map((v, j) => pts[0][j] + 0.5 * (v - pts[0][j])); vals[i] = f(pts[i]); } }
+      }
+    }
+    const best = vals.indexOf(Math.min(...vals));
+    return { x: pts[best], fx: vals[best] };
+  }
+  // data: [{t (h), X (fracción)}] ; opts: {fitAlphaInf, n0}
+  function fitModel(modelId, data, opts = {}) {
+    const fitAI = !!opts.fitAlphaInf;
+    const tmax = Math.max(...data.map(d => d.t)), Xmax = Math.max(...data.map(d => d.X));
+    // parámetros transformados: ln k, [ln n], [ln τR, ln τD], [logit α∞]
+    const unpack = v => {
+      let i = 0; const prm = {};
+      if (modelId === 'MX') { prm.tR = Math.exp(v[i++]); prm.tD = Math.exp(v[i++]); }
+      else { prm.k = Math.exp(v[i++]); if (modelId === 'JM') prm.n = Math.exp(v[i++]); }
+      prm.alphaInf = fitAI ? 1 / (1 + Math.exp(-v[i++])) : (opts.alphaInf || 1);
+      return prm;
+    };
+    const sse = v => {
+      const prm = unpack(v); let s = 0;
+      for (const d of data) { const a = modelAlphaConst(modelId, d.t, prm); const e = prm.alphaInf * a - d.X; s += e * e; }
+      return isFinite(s) ? s : 1e30;
+    };
+    // valor inicial: k tal que el modelo pasa por el punto de máxima extracción
+    const last = data.reduce((m, d) => d.t > m.t ? d : m, data[0]);
+    const a0 = Math.min(Math.max(last.X / (fitAI ? Math.min(0.999, Xmax * 1.02) : (opts.alphaInf || 1)), 0.05), 0.98);
+    let v0 = [];
+    if (modelId === 'MX') { v0 = [Math.log(last.t / G.R3.g(a0) * 2), Math.log(last.t / gD(a0) * 2)]; }
+    else {
+      const gfun = modelId === 'JM' ? (a => JM_g(a, opts.n0 || 1)) : G[modelId].g;
+      v0 = [Math.log(gfun(a0) / last.t)];
+      if (modelId === 'JM') v0.push(Math.log(opts.n0 || 1));
+    }
+    if (fitAI) { const ai0 = Math.min(0.999, Math.max(Xmax * 1.02, 0.5)); v0.push(Math.log(ai0 / (1 - ai0))); }
+    let best = null;
+    // varios arranques para robustez
+    for (const sh of [0, 0.7, -0.7, 1.5, -1.5]) {
+      const v = v0.map((x, i) => i === 0 ? x + sh : x);
+      const r = nelderMead(sse, v, v.map(() => 0.4), 1500);
+      if (!best || r.fx < best.fx) best = r;
+    }
+    const prm = unpack(best.x);
+    const pred = data.map(d => prm.alphaInf * modelAlphaConst(modelId, d.t, prm));
+    return Object.assign({ modelId, prm, pred, nParams: best.x.length }, stats(data.map(d => d.X), pred, best.x.length));
+  }
+  function stats(y, yhat, p) {
+    const n = y.length, mean = y.reduce((a, b) => a + b, 0) / n;
+    let ssr = 0, sst = 0;
+    for (let i = 0; i < n; i++) { ssr += (y[i] - yhat[i]) ** 2; sst += (y[i] - mean) ** 2; }
+    const R2 = sst > 0 ? 1 - ssr / sst : NaN;
+    const RMSE = Math.sqrt(ssr / n);
+    const R2adj = (n - p - 1) > 0 ? 1 - (1 - R2) * (n - 1) / (n - p - 1) : NaN;
+    const AIC = n * Math.log(ssr / n + 1e-300) + 2 * p;
+    const resid = y.map((v, i) => v - yhat[i]);
+    return { R2, R2adj, RMSE, SSR: ssr, AIC, resid, n };
+  }
+  // Linealización del enfoque integral (Cap. 2 §2.2.1): g(α) vs t, recta por el origen
+  function linearization(modelId, data, n) {
+    const pts = data.filter(d => d.X > 0 && d.X < 1).map(d => ({ t: d.t, g: modelId === 'JM' ? JM_g(d.X, n || 1) : (modelId === 'MX' ? NaN : G[modelId].g(d.X)) }));
+    if (!pts.length || pts.some(q => !isFinite(q.g))) return null;
+    const stt = pts.reduce((s, q) => s + q.t * q.t, 0), stg = pts.reduce((s, q) => s + q.t * q.g, 0);
+    const k = stg / stt;
+    const st = stats(pts.map(q => q.g), pts.map(q => k * q.t), 1);
+    return { k, pts, R2: st.R2 };
+  }
+  // Gráfica de tiempo reducido (Cap. 2 §2.6, Ec. 2.51): α vs t/t0.5
+  function reducedTimeTheory(modelId, alphas) {
+    const g = G[modelId].g, g5 = g(0.5);
+    return alphas.map(a => ({ a, tr: g(a) / g5 }));
+  }
+  function t05(data) { // interpolación lineal del tiempo a α = 0.5
+    const s = data.slice().sort((a, b) => a.t - b.t);
+    for (let i = 1; i < s.length; i++) if (s[i - 1].X <= 0.5 && s[i].X >= 0.5) {
+      const f = (0.5 - s[i - 1].X) / (s[i].X - s[i - 1].X); return s[i - 1].t + f * (s[i].t - s[i - 1].t);
+    }
+    return null;
+  }
+  // Regresión lineal simple
+  function linreg(x, y) {
+    const n = x.length, mx = x.reduce((a, b) => a + b, 0) / n, my = y.reduce((a, b) => a + b, 0) / n;
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i++) { sxy += (x[i] - mx) * (y[i] - my); sxx += (x[i] - mx) ** 2; syy += (y[i] - my) ** 2; }
+    const slope = sxy / sxx, icpt = my - slope * mx;
+    return { slope, icpt, R2: syy > 0 ? (sxy * sxy) / (sxx * syy) : NaN };
+  }
+
+  // Datos sintéticos de demostración (pseudoaleatorio con semilla) — NO experimentales
+  function synthData(modelId, prm, times, sd, seed) {
+    let s = seed || 12345;
+    const rnd = () => { s = (s * 1103515245 + 12345) % 2147483648; return s / 2147483648; };
+    const gauss = () => { let u = 0, v = 0; while (u === 0) u = rnd(); v = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+    return times.map(t => ({ t, X: clamp01((prm.alphaInf || 1) * modelAlphaConst(modelId, t, prm) + sd * gauss()) }));
+  }
+
+  const API = {
+    CONST, G, MODELS, EXCLUDED, JM_g, JM_inv, gD, gDp, bisect,
+    fluxRA, concPhi, regime, recessionRate_um_h, cnAt, arrh, cnMolarity, o2Molarity,
+    timeGrid, simulate, simulateMixed, anchorK, impliedGoldSize,
+    basisFromParams, residenceTimes, pulpDensity, goldSeries, plantBalance,
+    modelAlphaConst, fitModel, stats, linearization, reducedTimeTheory, t05, linreg, nelderMead, synthData
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.KM = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>/* Utilidades de interfaz: formato, gráficas SVG interactivas, exportación (CSV, XLSX, SVG, PNG) */
+(function (root) {
+  'use strict';
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function fmt(v, d = 2) {
+    if (v === null || v === undefined || Number.isNaN(v)) return '–';
+    if (!isFinite(v)) return v > 0 ? '∞' : '−∞';
+    const a = Math.abs(v);
+    if (a !== 0 && (a < 1e-3 || a >= 1e7)) return v.toExponential(Math.max(d, 2)).replace('.', ',').replace('e', '×10^');
+    return v.toLocaleString('es-CO', { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+  function badge(src, txt) { return `<span class="b ${src}" title="${esc(SRC_TITLES[src] || '')}">${txt || SRC_LABEL[src] || src}</span>`; }
+  const SRC_LABEL = { INF: 'INFORME', CALC: 'CALCULADO', USR: 'USUARIO', HIP: 'HIPOTÉTICO', LIB: 'LIBRO', AJU: 'AJUSTADO', MOD: 'MODELO', SIM: 'SIM. EXPLORATORIA', CONST: 'CONSTANTE' };
+  const SRC_TITLES = {
+    INF: 'Dato suministrado por el informe técnico del proyecto',
+    CALC: 'Cálculo directo a partir de datos (sin modelo cinético)',
+    USR: 'Decisión o entrada del usuario',
+    HIP: 'Valor hipotético o ilustrativo: no proviene del informe ni de un ensayo',
+    LIB: 'Dato o rango tomado del libro Kinetics of Metallurgical Processes',
+    AJU: 'Parámetro ajustado a datos cargados por el usuario',
+    MOD: 'Estimación mediante un modelo cinético',
+    SIM: 'Simulación exploratoria sin calibración experimental',
+    CONST: 'Constante física de referencia'
+  };
+
+  // ---------------- Gráfica de líneas SVG ----------------
+  const NS = 'http://www.w3.org/2000/svg';
+  function niceTicks(min, max, n = 5) {
+    if (!(max > min)) { max = min + 1; }
+    const span = max - min, step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+    const err = step0 / mag; let step = mag * (err >= 7.5 ? 10 : err >= 3.5 ? 5 : err >= 1.5 ? 2 : 1);
+    const lo = Math.ceil(min / step - 1e-9) * step, out = [];
+    for (let v = lo; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(12));
+    return out;
+  }
+  function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+  const FONT = 'system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif';
+  const DASH = ['', '6 4', '2 3', '9 3 2 3', '4 2', '1 2', '10 4'];
+
+  /* spec: {title, sub, xLabel, yLabel, series:[{name,color,dash,x,y,type:'line'|'scatter',width}], vlines:[{x,label}], hlines:[{y,label}],
+            xMin,xMax,yMin,yMax, height, yFmt, xFmt, tipX:'h'} */
+  function lineChart(container, spec) {
+    container.innerHTML = '';
+    container.classList.add('chart');
+    const head = document.createElement('div'); head.className = 'ct';
+    head.innerHTML = `<div><h4>${esc(spec.title)}</h4>${spec.sub ? `<div class="sub">${spec.sub}</div>` : ''}</div>
+      <div class="row"><button class="btn sm" data-x="svg">SVG</button><button class="btn sm" data-x="png">PNG</button></div>`;
+    container.appendChild(head);
+    const series = spec.series.filter(s => s && s.x && s.x.length);
+    const lgS = series.filter(s => s.name);
+    if (lgS.length > 1 || spec.forceLegend) {
+      const lg = document.createElement('div'); lg.className = 'legend';
+      lg.innerHTML = lgS.map(s => s.type === 'scatter'
+        ? `<span><svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="${s.color}" stroke="#fff" stroke-width="1.5"/></svg>${esc(s.name)}</span>`
+        : `<span><svg width="26" height="10"><line x1="1" y1="5" x2="25" y2="5" stroke="${s.color}" stroke-width="2.4" stroke-dasharray="${s.dash || ''}" stroke-linecap="round"/></svg>${esc(s.name)}</span>`).join('');
+      container.appendChild(lg);
+    }
+    const W = spec.width || Math.max(420, Math.min(1400, Math.round(container.clientWidth - 26) || 640)), H = spec.height || 300, m = { l: 62, r: 16, t: 12, b: 44 };
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, xmlns: NS, 'font-family': FONT, role: 'img', 'aria-label': spec.title });
+    container.appendChild(svg);
+    const tip = document.createElement('div'); tip.className = 'tip'; container.appendChild(tip);
+    let xs = [], ys = [];
+    series.forEach(s => { s.x.forEach((v, i) => { const y = s.y[i]; if (isFinite(v) && isFinite(y)) { xs.push(v); ys.push(y); } }); });
+    let xMin = spec.xMin ?? Math.min(...xs), xMax = spec.xMax ?? Math.max(...xs);
+    let yMin = spec.yMin ?? Math.min(0, ...ys), yMax = spec.yMax ?? Math.max(...ys);
+    if (spec.yMin === undefined && yMin < 0) yMin = yMin - (yMax - yMin) * 0.05;
+    if (!isFinite(xMin)) { xMin = 0; xMax = 1; } if (!isFinite(yMin)) { yMin = 0; yMax = 1; }
+    if (yMax === yMin) yMax = yMin + 1;
+    if (spec.yMax === undefined) yMax = yMax + (yMax - yMin) * 0.04;
+    const pw = W - m.l - m.r, ph = H - m.t - m.b;
+    const X = v => m.l + (v - xMin) / (xMax - xMin) * pw, Y = v => m.t + ph - (v - yMin) / (yMax - yMin) * ph;
+    const dec = (lo, hi, n) => { const tk = niceTicks(lo, hi, n); const st = tk.length > 1 ? tk[1] - tk[0] : (hi - lo); return Math.min(6, Math.max(0, -Math.floor(Math.log10(st) + 1e-9))); };
+    const yd = dec(yMin, yMax, 5), xd = dec(xMin, xMax, 7);
+    const yF = spec.yFmt || (v => fmt(v, yd)), xF = spec.xFmt || (v => fmt(v, xd));
+    const tipF = spec.tipFmt || (v => fmt(v, Math.min(6, yd + 2)));
+    el('rect', { x: 0, y: 0, width: W, height: H, fill: '#fcfcfb' }, svg);
+    const grid = el('g', {}, svg);
+    niceTicks(yMin, yMax, 5).forEach(v => {
+      if (v < yMin - 1e-12 || v > yMax + 1e-12) return;
+      el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: v === 0 ? '#bdbab2' : '#ebe9e3', 'stroke-width': 1 }, grid);
+      const t = el('text', { x: m.l - 7, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#6b6a65' }, grid); t.textContent = yF(v);
+    });
+    niceTicks(xMin, xMax, 7).forEach(v => {
+      if (v < xMin - 1e-12 || v > xMax + 1e-12) return;
+      el('line', { x1: X(v), x2: X(v), y1: m.t + ph, y2: m.t + ph + 4, stroke: '#9b988f' }, grid);
+      const t = el('text', { x: X(v), y: m.t + ph + 17, 'text-anchor': 'middle', 'font-size': 11, fill: '#6b6a65' }, grid); t.textContent = xF(v);
+    });
+    el('line', { x1: m.l, x2: W - m.r, y1: m.t + ph, y2: m.t + ph, stroke: '#9b988f' }, grid);
+    const xl = el('text', { x: m.l + pw / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 12, fill: '#3d3c39' }, svg); xl.textContent = spec.xLabel;
+    const yl = el('text', { x: 14, y: m.t + ph / 2, 'text-anchor': 'middle', 'font-size': 12, fill: '#3d3c39', transform: `rotate(-90 14 ${m.t + ph / 2})` }, svg); yl.textContent = spec.yLabel;
+    const clipId = 'c' + Math.random().toString(36).slice(2);
+    const defs = el('defs', {}, svg); const cp = el('clipPath', { id: clipId }, defs); el('rect', { x: m.l, y: m.t - 2, width: pw, height: ph + 4 }, cp);
+    (spec.hlines || []).forEach(h => {
+      if (h.y < yMin || h.y > yMax) return;
+      el('line', { x1: m.l, x2: W - m.r, y1: Y(h.y), y2: Y(h.y), stroke: h.color || '#8a8780', 'stroke-dasharray': '4 4', 'stroke-width': 1 }, svg);
+      const t = el('text', { x: m.l + 6, y: Y(h.y) - 4, 'text-anchor': 'start', 'font-size': 10.5, fill: '#5d5b55' }, svg); t.textContent = h.label;
+    });
+    (spec.vlines || []).forEach(v => {
+      if (v.x < xMin || v.x > xMax) return;
+      el('line', { x1: X(v.x), x2: X(v.x), y1: m.t, y2: m.t + ph, stroke: v.color || '#8a8780', 'stroke-dasharray': '4 4', 'stroke-width': 1 }, svg);
+      const t = el('text', { x: X(v.x) + 4, y: m.t + 11, 'font-size': 10.5, fill: '#5d5b55' }, svg); t.textContent = v.label;
+    });
+    const plot = el('g', { 'clip-path': `url(#${clipId})` }, svg);
+    series.forEach((s, si) => {
+      if (s.type === 'scatter') {
+        s.x.forEach((v, i) => { if (isFinite(v) && isFinite(s.y[i])) el('circle', { cx: X(v), cy: Y(s.y[i]), r: s.r || 4.5, fill: s.color, stroke: '#fcfcfb', 'stroke-width': 2 }, plot); });
+      } else if (s.type === 'bar0') {
+        s.x.forEach((v, i) => { if (isFinite(v) && isFinite(s.y[i])) el('line', { x1: X(v), x2: X(v), y1: Y(0), y2: Y(s.y[i]), stroke: s.color, 'stroke-width': 3, 'stroke-linecap': 'round' }, plot); });
+      } else {
+        let d = '', pen = false;
+        s.x.forEach((v, i) => {
+          const y = s.y[i];
+          if (!isFinite(v) || !isFinite(y)) { pen = false; return; }
+          const yy = Math.max(Math.min(Y(Math.max(Math.min(y, yMax + (yMax - yMin)), yMin - (yMax - yMin))), H * 3), -H * 2);
+          d += (pen ? 'L' : 'M') + X(v).toFixed(2) + ' ' + yy.toFixed(2); pen = true;
+        });
+        el('path', { d, fill: 'none', stroke: s.color, 'stroke-width': s.width || 2, 'stroke-dasharray': s.dash || '', 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, plot);
+      }
+    });
+    // capa de consulta (cruz + tooltip)
+    const cross = el('line', { y1: m.t, y2: m.t + ph, stroke: '#3d3c39', 'stroke-width': 1, opacity: 0 }, svg);
+    const dots = series.map(s => el('circle', { r: 4, fill: s.color, stroke: '#fff', 'stroke-width': 2, opacity: 0 }, svg));
+    const hit = el('rect', { x: m.l, y: m.t, width: pw, height: ph, fill: 'transparent', style: 'cursor:crosshair' }, svg);
+    const xUnit = spec.xUnit || '';
+    function move(ev) {
+      const r = svg.getBoundingClientRect(); const sx = (ev.clientX - r.left) / r.width * W;
+      const xv = xMin + (sx - m.l) / pw * (xMax - xMin);
+      let html = `<div class="h">${esc(spec.xName || spec.xLabel)}: ${xF(xv)} ${xUnit}</div>`, any = false;
+      series.forEach((s, si) => {
+        let bi = -1, bd = Infinity;
+        for (let i = 0; i < s.x.length; i++) { const d = Math.abs(s.x[i] - xv); if (d < bd) { bd = d; bi = i; } }
+        if (!s.name || bi < 0 || !isFinite(s.y[bi]) || (s.type === 'scatter' && bd > (xMax - xMin) * 0.03)) { dots[si].setAttribute('opacity', 0); return; }
+        any = true;
+        dots[si].setAttribute('cx', X(s.x[bi])); dots[si].setAttribute('cy', Y(Math.min(Math.max(s.y[bi], yMin), yMax))); dots[si].setAttribute('opacity', 1);
+        html += `<div class="r"><span><span class="sw" style="background:${s.color}"></span>${esc(s.name)}</span><b>${tipF(s.y[bi])}</b></div>`;
+      });
+      cross.setAttribute('x1', X(xv)); cross.setAttribute('x2', X(xv)); cross.setAttribute('opacity', any ? 0.35 : 0);
+      tip.innerHTML = html + (spec.yUnit ? `<div class="muted small">${esc(spec.yUnit)}</div>` : '');
+      tip.style.display = any ? 'block' : 'none';
+      const cr = container.getBoundingClientRect();
+      let left = ev.clientX - cr.left + 14; if (left + 210 > cr.width) left = ev.clientX - cr.left - 220;
+      tip.style.left = left + 'px'; tip.style.top = (ev.clientY - cr.top + 10) + 'px';
+    }
+    hit.addEventListener('mousemove', move);
+    hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; cross.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
+    head.querySelector('[data-x=svg]').onclick = () => exportSVG(svg, spec, series, 'svg');
+    head.querySelector('[data-x=png]').onclick = () => exportSVG(svg, spec, series, 'png');
+    return svg;
+  }
+  // SVG autónomo con título y leyenda incrustados
+  function standaloneSVG(svg, spec, series) {
+    const clone = svg.cloneNode(true);
+    const vb = svg.getAttribute('viewBox').split(' ').map(Number); const W = vb[2], H = vb[3];
+    const top = 26 + Math.ceil(series.length / 3) * 16;
+    const out = document.createElementNS(NS, 'svg');
+    out.setAttribute('xmlns', NS); out.setAttribute('viewBox', `0 0 ${W} ${H + top}`); out.setAttribute('width', W * 1.5); out.setAttribute('height', (H + top) * 1.5); out.setAttribute('font-family', FONT);
+    el('rect', { x: 0, y: 0, width: W, height: H + top, fill: '#fcfcfb' }, out);
+    const t = el('text', { x: 10, y: 17, 'font-size': 13, 'font-weight': 600, fill: '#151513' }, out); t.textContent = spec.title;
+    series.filter(s => s.name).forEach((s, i) => {
+      const cx = 10 + (i % 3) * (W / 3), cy = 32 + Math.floor(i / 3) * 16;
+      if (s.type === 'scatter') el('circle', { cx: cx + 8, cy: cy - 4, r: 4, fill: s.color }, out);
+      else el('line', { x1: cx, x2: cx + 20, y1: cy - 4, y2: cy - 4, stroke: s.color, 'stroke-width': 2.4, 'stroke-dasharray': s.dash || '' }, out);
+      const tx = el('text', { x: cx + 26, y: cy, 'font-size': 11, fill: '#3d3c39' }, out); tx.textContent = s.name;
+    });
+    const g = el('g', { transform: `translate(0 ${top})` }, out);
+    Array.from(clone.childNodes).forEach(n => g.appendChild(n));
+    return new XMLSerializer().serializeToString(out);
+  }
+  function exportSVG(svg, spec, series, kind) {
+    const str = standaloneSVG(svg, spec, series);
+    const base = slug(spec.title);
+    if (kind === 'svg') return saveFile(base + '.svg', str, 'image/svg+xml');
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = img.width * 1.4; c.height = img.height * 1.4;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fcfcfb'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => saveFile(base + '.png', b, 'image/png'), 'image/png');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(str);
+  }
+  const slug = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '').toLowerCase().slice(0, 60);
+
+  // ---------------- Guardado de archivos ----------------
+  let DL = null, dlTried = false;
+  function initDownloads() {
+    if (dlTried) return; dlTried = true;
+    try { if (root.claude && typeof root.claude.use === 'function') root.claude.use('downloads').then(x => { DL = x; }).catch(() => { }); } catch (e) { }
+  }
+  async function saveFile(name, data, mime) {
+    if (DL) {
+      try { await DL.save({ filename: name, data }); toast('Archivo listo: ' + name); return; }
+      catch (e) { if (e && e.code === 'declined') { toast('Descarga cancelada'); return; } }
+    }
+    try {
+      const blob = data instanceof Blob ? data : new Blob([data], { type: mime || 'application/octet-stream' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      toast('Descargando ' + name + ' (si no inicia, use "Copiar")');
+    } catch (e) { toast('Este visor no permite descargas: use los botones "Copiar".'); }
+  }
+  async function copyText(txt) {
+    try { await navigator.clipboard.writeText(txt); toast('Copiado al portapapeles'); }
+    catch (e) { toast('No se pudo copiar automáticamente'); }
+  }
+  function toast(msg) { const t = $('#toast'); if (!t) return; t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 3200); }
+
+  // ---------------- CSV ----------------
+  function toCSV(rows) { return rows.map(r => r.map(v => { if (typeof v === 'number') return isFinite(v) ? String(+v.toPrecision(10)) : ''; const s = String(v ?? ''); return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(',')).join('\r\n'); }
+  function parseCSV(text) {
+    const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
+    if (!lines.length) return { header: [], rows: [] };
+    const sep = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+    const split = l => l.split(sep).map(s => s.trim().replace(/^"|"$/g, ''));
+    const first = split(lines[0]); const hasHeader = first.some(c => isNaN(parseFloat(c.replace(',', '.'))));
+    const header = hasHeader ? first : first.map((_, i) => 'c' + i);
+    const rows = (hasHeader ? lines.slice(1) : lines).map(l => split(l).map(c => { const v = parseFloat(sep === ';' ? c.replace(',', '.') : c); return isNaN(v) ? c : v; }));
+    return { header, rows };
+  }
+
+  // ---------------- XLSX mínimo (ZIP sin compresión) ----------------
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+  function zip(files) {
+    const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+    for (const f of files) {
+      const name = enc.encode(f.name), data = typeof f.data === 'string' ? enc.encode(f.data) : f.data, crc = crc32(data);
+      const h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(8, 0, true);
+      h.setUint16(10, 0, true); h.setUint16(12, 0x21, true); h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true);
+      h.setUint16(26, name.length, true); h.setUint16(28, 0, true);
+      parts.push(new Uint8Array(h.buffer), name, data);
+      const c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true); c.setUint16(10, 0, true);
+      c.setUint16(12, 0, true); c.setUint16(14, 0x21, true); c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true);
+      c.setUint16(28, name.length, true); c.setUint32(42, off, true);
+      central.push(new Uint8Array(c.buffer), name);
+      off += 30 + name.length + data.length;
+    }
+    const cs = central.reduce((s, a) => s + a.length, 0);
+    const e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true); e.setUint32(12, cs, true); e.setUint32(16, off, true);
+    return new Blob([...parts, ...central, new Uint8Array(e.buffer)], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+  const xesc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+  function colName(i) { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; }
+  function xlsx(sheets) { // sheets: [{name, rows:[[...]]}]
+    const files = [];
+    files.push({ name: '[Content_Types].xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>` });
+    files.push({ name: '_rels/.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` });
+    files.push({ name: 'xl/workbook.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${sheets.map((s, i) => `<sheet name="${xesc(s.name.slice(0, 31))}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets></workbook>` });
+    files.push({ name: 'xl/_rels/workbook.xml.rels', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>` });
+    files.push({ name: 'xl/styles.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf fontId="0"/><xf fontId="1" applyFont="1"/></cellXfs></styleSheet>` });
+    sheets.forEach((s, si) => {
+      const rows = s.rows.map((r, ri) => `<row r="${ri + 1}">${r.map((v, ci) => {
+        const ref = colName(ci) + (ri + 1), st = ri === 0 || s.boldRows?.includes(ri) ? ' s="1"' : '';
+        if (typeof v === 'number' && isFinite(v)) return `<c r="${ref}"${st}><v>${v}</v></c>`;
+        if (v === null || v === undefined || v === '') return '';
+        return `<c r="${ref}" t="inlineStr"${st}><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
+      }).join('')}</row>`).join('');
+      files.push({ name: `xl/worksheets/sheet${si + 1}.xml`, data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows}</sheetData></worksheet>` });
+    });
+    return zip(files);
+  }
+
+  root.UI = { $, $$, esc, fmt, badge, SRC_LABEL, SRC_TITLES, lineChart, DASH, saveFile, copyText, toast, toCSV, parseCSV, xlsx, initDownloads, slug };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>/* Aplicación: estado, cálculo y módulos 1–8 */
+(function () {
+  'use strict';
+  const { $, $$, esc, fmt, badge, lineChart, DASH, saveFile, copyText, toast, toCSV, parseCSV, xlsx } = UI;
+  const D = DEFAULTS;
+  const ORDER = ['R3', 'GB', 'JA', 'F1', 'MX', 'JM'];
+  const COLORS = { R3: 'var(--s1)', GB: 'var(--s2)', JA: 'var(--s3)', F1: 'var(--s4)', MX: 'var(--s5)', JM: 'var(--s6)' };
+  const HEX = { R3: '#2a78d6', GB: '#eb6834', JA: '#1baf7a', F1: '#eda100', MX: '#e87ba4', JM: '#008300' };
+  const DSH = { R3: '', GB: '7 4', JA: '2 3', F1: '10 3 2 3', MX: '4 2', JM: '1 3' };
+  const SCN = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#6250d6', '#e34948'];
+
+  // ---------------- Estado ----------------
+  const P = JSON.parse(JSON.stringify(D));
+  const S = {
+    enabled: { R3: true, GB: true, JA: false, F1: true, MX: false, JM: false },
+    primary: 'R3',
+    kmode: { R3: 'anchor', GB: 'anchor', JA: 'anchor', F1: 'anchor', MX: 'anchor', JM: 'anchor' },
+    kman: { R3: 0.04, GB: 0.0143, JA: 0.0235, F1: 0.167, MX_tR: 12.5, MX_tD: 11.7, JM: 0.25 },
+    fitted: {},        // {model: {k..., synthetic:bool, R2, RMSE}}
+    tView: null,       // tiempo de consulta en módulo 3
+    fit: null, data: null, dataSynthetic: false,
+    scenarios: [], tab: 'm1'
+  };
+  let R = null; // resultados
+
+  // ---------------- Cálculo ----------------
+  function refCondition(p) {
+    const ref = Object.assign({}, p, {
+      basis: 'planta', tpd: D.tpd, cn1: D.cn1, cnN: D.cnN, cnProfile: D.cnProfile, o2: D.o2, T_C: p.Tref_C,
+      P80_um: D.P80_um, dAu_um: D.dAu_um, delta_um: D.delta_um, nPre: D.nPre, vPre: D.vPre, nCIL: D.nCIL, vCIL: D.vCIL,
+      solidsPct: D.solidsPct, rhoS: D.rhoS, rhoW: D.rhoW
+    });
+    ref.tLeach = KM.residenceTimes(ref).tLeach;
+    return ref;
+  }
+  const anchorCache = new Map();
+  function kParams(m, p, ref) {
+    const mode = S.kmode[m];
+    if (mode === 'habashi' && m === 'R3') return { mode: 'habashi', src: 'MOD', note: 'a priori: Ec. 5.23 + d de grano' };
+    if (mode === 'manual' || mode === 'fit') {
+      const src = mode === 'fit' ? (S.fitted[m] && S.fitted[m].synthetic ? 'SIM' : 'AJU') : 'USR';
+      if (m === 'MX') return { kR: 1 / S.kman.MX_tR, kD: 1 / S.kman.MX_tD, src, note: mode === 'fit' ? 'ajustado' : 'manual' };
+      return { k: S.kman[m], n: p.nJM, mode: 'manual', src, note: mode === 'fit' ? 'ajustado' : 'manual' };
+    }
+    const key = JSON.stringify([m, ref.Xdesign, ref.alphaInf, ref.tLeach, ref.cnBasis, ref.Tref_C, ref.phi, ref.nJM, ref.prelixCounts]);
+    let an = anchorCache.get(key);
+    if (!an) { an = KM.anchorK(m, ref, ref.Xdesign / 100, ref.tLeach, { phi: ref.phi, n: ref.nJM }); anchorCache.set(key, an); }
+    if (m === 'MX') return { kR: an.kR, kD: an.kD, src: 'SIM', note: 'anclado al diseño' };
+    return { k: an.k, n: ref.nJM, mode: 'anchor', src: 'SIM', note: 'anclado al diseño' };
+  }
+  function interp(ts, ys, t) {
+    if (t <= ts[0]) return ys[0]; const n = ts.length; if (t >= ts[n - 1]) return ys[n - 1];
+    const h = ts[1] - ts[0]; const i = Math.min(Math.floor(t / h), n - 2); const f = (t - ts[i]) / (ts[i + 1] - ts[i]);
+    return ys[i] + f * (ys[i + 1] - ys[i]);
+  }
+  function timeTo(ts, X, target) { for (let i = 1; i < X.length; i++) if (X[i] >= target && X[i - 1] < target) { const f = (target - X[i - 1]) / (X[i] - X[i - 1]); return ts[i - 1] + f * (ts[i] - ts[i - 1]); } return null; }
+  function runModel(m, p, ref, ts, b) {
+    const kp = kParams(m, p, ref);
+    const sim = m === 'MX' ? KM.simulateMixed(p, ref, kp, ts) : KM.simulate(m, p, ref, kp, ts);
+    const gs = KM.goldSeries(sim.alpha, p.alphaInf, b);
+    const r = { m, kp, ts, alpha: sim.alpha, rate: sim.rate, kEff: sim.kEff, ...gs };
+    r.Xend = interp(ts, gs.X, p.tLeach); r.alphaEnd = interp(ts, sim.alpha, p.tLeach);
+    r.t50 = timeTo(ts, gs.X, 0.5); r.t90 = timeTo(ts, gs.X, 0.9);
+    r.warn = [];
+    if (m === 'JA' && r.alphaEnd > 0.3) r.warn.push(`Jander se usa con α = ${fmt(r.alphaEnd, 2)}; el libro lo restringe a α → 0 (Cap. 4 §4.2.4). Los valores altos de α no son confiables.`);
+    if (m === 'GB') r.warn.push('GB sólo describe la lixiviación si existe una capa porosa de residuo (ganga u óxidos) que controle la difusión; para oro libre no aplica.');
+    if (m === 'JM') r.warn.push('Johnson–Mehl es empírico: la cianuración no implica nucleación ni crecimiento de una nueva fase; n y k′ carecen de significado mecanístico.');
+    if (m === 'MX' && kp.src === 'SIM') r.warn.push('La fracción φ que reparte la resistencia en el punto de diseño es hipotética.');
+    if (m === 'R3' && kp.mode === 'habashi') r.warn.push('Constante a priori: depende del diámetro de grano de oro y de δ, que son hipotéticos.');
+    return r;
+  }
+  function compute() {
+    const p = Object.assign({}, P);
+    const rt = KM.residenceTimes(p); p.tLeach = rt.tLeach;
+    const ref = refCondition(p);
+    const b = rt.b;
+    const tmax = Math.max(1, p.tLeach * p.tmaxFactor);
+    const ts = KM.timeGrid(tmax, 600);
+    const res = {};
+    const needed = new Set(ORDER); // se calculan todos (coste bajo) para mostrar sus constantes
+    for (const m of needed) res[m] = runModel(m, p, ref, ts, b);
+    const reg = KM.regime(KM.cnAt(0, p), p.o2, p.cnBasis);
+    const regEnd = KM.regime(p.cnProfile === 'lineal' ? p.cnN : p.cn1, p.o2, p.cnBasis);
+    const RA = KM.fluxRA(p.cn1, p.o2, p.delta_um * 1e-4, p.cnBasis);
+    const vrec = KM.recessionRate_um_h(p.cn1, p.o2, p.delta_um * 1e-4, p.cnBasis);
+    const dImp = KM.impliedGoldSize(Object.assign({}, ref, { delta_um: p.delta_um }), ref.Xdesign / 100, ref.tLeach);
+    R = { p, ref, rt, b, ts, res, reg, regEnd, RA, vrec, dImp, rhoP: KM.pulpDensity(p), bal: KM.plantBalance(p, res[S.primary].Xend) };
+    return R;
+  }
+
+  // ---------------- Módulo 1: Parámetros ----------------
+  const GROUPS = [
+    { t: 'Base de cálculo', keys: [] },
+    { t: 'Mineral y molienda', keys: ['grade', 'gravPct', 'P80_um', 'rhoS', 'dAu_um'] },
+    { t: 'Pulpa y solución', keys: ['solidsPct', 'rhoW', 'pH', 'cn1', 'cnN', 'o2', 'T_C', 'delta_um'] },
+    { t: 'Circuito de lixiviación (planta)', keys: ['tpd', 'nPre', 'vPre', 'nCIL', 'vCIL', 'Xdesign'], planta: true },
+    { t: 'Ensayo por lotes', keys: ['batchKg', 'batchHours'], lote: true },
+    { t: 'Parámetros cinéticos hipotéticos', keys: ['alphaInf', 'Tref_C', 'E_R', 'E_D', 'E_E', 'ordCN', 'ordO2', 'phi', 'nJM', 'tmaxFactor'] },
+    { t: 'Recuperación aguas abajo (balance)', keys: ['solLoss_mgL', 'effElu', 'effEW', 'effSmelt', 'effGrav', 'carbonConc', 'carbonLoad'] }
+  ];
+  function prmRow(k) {
+    const mta = META[k]; const v = P[k];
+    return `<div class="prm" data-k="${k}"><label for="n_${k}">${esc(mta.label)}<div class="unit">${esc(mta.unit)}</div></label>${badge(mta.src)}
+      <input type="range" id="r_${k}" min="${mta.min}" max="${mta.max}" step="${mta.step}" value="${v}" aria-label="${esc(mta.label)}">
+      <input type="number" id="n_${k}" min="${mta.min}" max="${mta.max}" step="${mta.step}" value="${v}">
+      ${mta.ref ? `<div class="ref">${esc(mta.ref)}${D[k] !== undefined && mta.src === 'INF' ? ` · valor del informe: ${fmt(D[k], (String(D[k]).split('.')[1] || '').length)}` : ''}</div>` : ''}</div>`;
+  }
+  function renderM1() {
+    const sec = $('#m1');
+    sec.innerHTML = `<h2>Módulo 1 · Parámetros de entrada</h2>
+    <p class="lead">Los valores iniciales son los del informe técnico (planta CIL de 200 t/d, mineral tipo Vetas). Cada parámetro indica su procedencia. Al modificar cualquiera, todos los módulos se recalculan.</p>
+    <div class="banner info">Etiquetas: ${['INF', 'LIB', 'CALC', 'USR', 'HIP', 'AJU', 'SIM'].map(s => badge(s) + ' ' + esc(UI.SRC_TITLES[s])).join(' · ')}</div>
+    <div class="grid g2" id="m1grid"></div>
+    <h3>Valores calculados automáticamente ${badge('CALC')}</h3><div id="m1calc" class="card"></div>`;
+    const g = $('#m1grid');
+    GROUPS.forEach((gr, gi) => {
+      const fs = document.createElement('fieldset'); if (gr.planta) fs.dataset.planta = 1; if (gr.lote) fs.dataset.lote = 1;
+      let inner = `<legend>${esc(gr.t)}</legend>`;
+      if (gi === 0) {
+        inner += `<div class="prm"><label>Base de cálculo</label>${badge('USR')}<select id="basis" class="inline-select" style="grid-column:span 2">
+          <option value="planta">Planta continua (flujo pistón; lote equivalente = alimentación de 1 día)</option>
+          <option value="lote">Lote / ensayo de botella</option></select>
+          <div class="ref">En planta, la edad t de un elemento de pulpa equivale a su posición en la cascada de tanques. Las masas se expresan para la alimentación de un día.</div></div>
+          <div class="prm"><label>Base de expresión del cianuro</label>${badge('USR')}<select id="cnBasis" class="inline-select" style="grid-column:span 2">
+          <option value="NaCN">g/L como NaCN</option><option value="CN">g/L como CN⁻</option></select>
+          <div class="ref">Ambigüedad del informe: no indica si 0,35 g/L es NaCN o CN⁻. Cambia [CN⁻] molar por un factor 1,88.</div></div>
+          <div class="prm"><label>Perfil de cianuro en la cascada</label>${badge('USR')}<select id="cnProfile" class="inline-select" style="grid-column:span 2">
+          <option value="lineal">Lineal: tanque 1 → último tanque</option><option value="constante">Constante (= tanque 1)</option></select>
+          <div class="ref">El informe da 0,30–0,40 g/L en el tanque 1 y ≥ 0,15 g/L al final, pero no el perfil intermedio: el perfil lineal es un supuesto.</div></div>
+          <div class="prm"><label>¿La prelixiviación cuenta como tiempo de lixiviación?</label>${badge('USR')}<select id="prelixCounts" class="inline-select" style="grid-column:span 2">
+          <option value="false">No: en el informe se hace sin cianuro (§7)</option><option value="true">Sí: si se adiciona cianuro en molienda</option></select>
+          <div class="ref">El informe habla de 24 h de residencia (8 h + 16 h), pero añade el cianuro en el primer tanque CIL. Por defecto el tiempo cinético es de 16 h.</div></div>
+          <div class="prm" data-lote="1"><label>Descontar gravimetría en el lote</label>${badge('USR')}<select id="batchGrav" class="inline-select" style="grid-column:span 2"><option value="false">No (muestra completa)</option><option value="true">Sí</option></select></div>`;
+      } else inner += gr.keys.map(prmRow).join('');
+      fs.innerHTML = inner; g.appendChild(fs);
+    });
+    ['basis', 'cnBasis', 'cnProfile', 'prelixCounts', 'batchGrav'].forEach(id => {
+      const s = $('#' + id); s.value = String(P[id]);
+      s.onchange = () => { P[id] = (s.value === 'true' ? true : s.value === 'false' ? false : s.value); update(); };
+    });
+    $$('#m1grid .prm[data-k]').forEach(row => {
+      const k = row.dataset.k, r = $('#r_' + k, row), n = $('#n_' + k, row);
+      r.oninput = () => { n.value = r.value; P[k] = +r.value; update(); };
+      n.onchange = () => { const v = +n.value; if (!isFinite(v)) return; P[k] = v; r.value = v; update(); };
+    });
+    const bt = document.createElement('div'); bt.className = 'row'; bt.style.marginTop = '12px';
+    bt.innerHTML = `<button class="btn" id="resetP">Restablecer valores del informe</button><button class="btn" id="useImpl">Usar el diámetro de grano implícito</button>`;
+    sec.insertBefore(bt, $('#m1grid').nextSibling);
+    $('#resetP').onclick = () => { Object.assign(P, JSON.parse(JSON.stringify(D))); renderM1(); update(); toast('Parámetros restablecidos'); };
+    $('#useImpl').onclick = () => { P.dAu_um = Math.round(R.dImp * 10) / 10; syncInputs(); update(); };
+  }
+  function syncInputs() { for (const k in META) { const r = $('#r_' + k), n = $('#n_' + k); if (r) r.value = P[k]; if (n) n.value = P[k]; } }
+  function renderM1calc() {
+    const { p, rt, b, reg, regEnd, RA, vrec, dImp, rhoP, ref } = R;
+    $$('#m1grid [data-planta]').forEach(e => e.style.display = p.basis === 'planta' ? '' : 'none');
+    $$('#m1grid [data-lote]').forEach(e => e.style.display = p.basis === 'lote' ? '' : 'none');
+    const rows = [];
+    if (p.basis === 'planta') {
+      rows.push(['Caudal de pulpa a lixiviación', fmt(b.Q_h, 2), 'm³/h', 'Q = (M/ρs + M·(1−x)/x/ρw)/24', 'Informe: 13,2 m³/h']);
+      rows.push(['Tiempo de residencia en prelixiviación', fmt(rt.tPre, 2), 'h', 'nPre·Vpre/Q', 'Informe: 8 h']);
+      rows.push(['Tiempo de residencia en CIL', fmt(rt.tCIL, 2), 'h', 'nCIL·VCIL/Q', 'Informe: 16 h']);
+    }
+    rows.push(['Tiempo de lixiviación usado por el modelo', fmt(p.tLeach, 2), 'h', p.basis === 'planta' ? (p.prelixCounts ? 'tPre + tCIL' : 'tCIL') : 'lote', '']);
+    rows.push(['Densidad de pulpa', fmt(rhoP, 3), 't/m³', '1/(x/ρs + (1−x)/ρw)', 'Informe: 1,40']);
+    rows.push(['Volumen de solución (base)', fmt(b.water_m3, p.basis === 'planta' ? 1 : 5), 'm³', 'M·(1−x)/(x·ρw)', p.basis === 'planta' ? 'Informe: 244 m³/d' : '']);
+    rows.push(['Oro alimentado a lixiviación (base)', fmt(b.auLeach, 2), 'g', 'M·ley·(1 − grav)', p.basis === 'planta' ? 'Informe: 1073 g/d' : '']);
+    rows.push(['[CN⁻] tanque 1 / [O₂]', `${fmt(KM.cnMolarity(p.cn1, p.cnBasis) * 1000, 3)} / ${fmt(KM.o2Molarity(p.o2) * 1000, 4)}`, 'mmol/L', 'Ec. 5.23 (insumos)', '']);
+    rows.push(['Relación molar [CN⁻]/[O₂] (inicio → final)', `${fmt(reg.ratio, 1)} → ${fmt(regEnd.ratio, 1)}`, '–', 'Crítica = 4·D_O₂/D_CN = ' + fmt(reg.crit, 2) + ' (Ec. 5.26)', reg.label]);
+    rows.push(['Flujo de disolución R/A (tanque 1)', fmt(RA, 3), 'mol Au/(cm²·s)', 'Ec. 5.23', '']);
+    rows.push(['Retroceso del radio del grano de Au', fmt(vrec, 3), 'µm/h', 'dr/dt = (M/ρ)·R/A (Ec. 3.12)', '']);
+    rows.push(['Tiempo de disolución completa del grano (d actual)', fmt((P.dAu_um / 2) / vrec, 2), 'h', 'r0/(dr/dt) con [CN] del tanque 1', badge('HIP', 'd hipotético')]);
+    rows.push(['Diámetro de grano implícito por el punto de diseño', fmt(dImp, 1), 'µm', 'Ec. 5.23 integrada para que X(t*) = X diseño', 'El informe indica que la gravimetría retira el oro > 50 µm']);
+    $('#m1calc').innerHTML = `<table><tr><th>Variable</th><th class="num">Valor</th><th>Unidad</th><th>Cálculo</th><th>Comparación / nota</th></tr>${rows.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td>${r[2]}</td><td class="small muted">${r[3]}</td><td class="small">${r[4]}</td></tr>`).join('')}</table>`;
+  }
+
+  // ---------------- Módulo 2: Modelos ----------------
+  const INFO = {
+    R3: {
+      fen: 'Disolución del grano de oro (esfera no porosa) cuya superficie retrocede a velocidad constante; el producto Au(CN)₂⁻ es soluble y no forma capa.',
+      mec: 'Mecanismo electroquímico (Cap. 5 §5.3.1, Ec. 5.16–5.17): ánodo Au + 2CN⁻ → Au(CN)₂⁻ + e⁻; cátodo O₂ + 2H₂O + 4e⁻ → 4OH⁻ (reacción global Ec. 5.15). Etapas en serie (Cap. 3 §3.2.1): (a) difusión de O₂ y CN⁻ en la capa límite, (d) reacción en la interfase, (h) difusión del producto hacia la solución.',
+      ctrl: 'Con [CN⁻]/[O₂] ≫ 6 (Ec. 5.26) controla la difusión de O₂ en la capa límite (Ec. 5.25). Si las concentraciones en el seno de la solución se mantienen constantes, la velocidad es proporcional al área y produce la misma ley que el control químico (Cap. 3 §3.5.1–3.5.2; Cap. 5 §5.5.2, Ec. 5.67–5.69).',
+      sup: ['Granos esféricos de igual tamaño (conjunto monodisperso, Ec. 3.18–3.20).', 'Sin escasez de reactivo: [CN⁻] y [O₂] en el seno de la solución fijados por la dosificación (Cap. 1 §1.1.2).', 'Temperatura constante y calor de reacción despreciable (Cap. 3 §3.2.1).', 'El oro está expuesto a la solución (liberado o accesible).'],
+      lim: ['La distribución real de tamaños invalida la forma simple (Cap. 3 §3.3.3; Cap. 4 p. 108).', 'No distingue entre control químico y control por película sólo con la forma de la curva: se requiere la energía de activación o el efecto de la agitación (Cap. 3 p. 70).', 'Prevé disolución completa en un tiempo finito.'],
+      vars: 'k ∝ (R/A)/r0, con R/A = f([CN⁻], [O₂], δ) según la Ec. 5.23; Arrhenius según la Ec. 1.6.',
+      data: 'Del informe: [CN⁻], OD, t de residencia y X de diseño. Faltan: tamaño del grano de oro, δ real y la energía de activación.'
+    },
+    GB: {
+      fen: 'Reacción en un frente esférico que avanza hacia el centro de la partícula, con el reactivo difundiendo por una capa de producto o residuo cada vez más gruesa.',
+      mec: 'Ley de Fick en geometría esférica bajo estado pseudoestacionario (Ec. 4.11–4.14), con concentración interfacial nula; se integra con el retroceso del radio del núcleo (Ec. 4.15–4.22). Se supone densidad del producto igual a la del reactivo (Z = 1).',
+      ctrl: 'Difusión a través de la capa porosa de residuo: ganga lixiviada, óxidos/hidróxidos de Fe formados en la preaireación o incrustaciones de calcio. Szekely y Evans muestran que una capa de producto porosa da la misma cinética (Cap. 4 §4.3.4).',
+      sup: ['Partícula de mena esférica con oro diseminado homogéneamente.', 'Z = 1 (sin cambio de volumen).', 'Concentración externa constante y concentración nula en el frente.', 'Tamaño uniforme.'],
+      lim: ['Para oro libre no existe una capa de producto: el modelo no tiene base física.', 'El informe no tiene datos de porosidad, tortuosidad (Ec. 4.48) ni D efectiva.', 'La velocidad inicial es infinita (t → 0).'],
+      vars: 'k = 2·M·D_e·C/(β·ρ·r0²) (Ec. 4.23): ∝ 1/r0² (Cap. 4 p. 93) y ∝ concentración; no depende de la agitación δ.',
+      data: 'Del informe: P80 = 75 µm. Faltan D_e = D·ε/τ (Ec. 4.48), la porosidad y la curva X(t).'
+    },
+    JA: {
+      fen: 'Igual que GB, pero con área de reacción prácticamente constante.',
+      mec: 'Sustituye y = r0[1 − (1−α)¹ᐟ³] en la ley parabólica y² = k′t (Ec. 4.3, 4.7–4.10).',
+      ctrl: 'Difusión en la capa de producto con espesor pequeño.',
+      sup: ['Grado de reacción pequeño (y ≈ 0).', 'Densidad del producto igual a la del reactivo.'],
+      lim: ['El libro lo considera hipotético y válido sólo cuando α → 0 (Cap. 4 p. 86, 91).', 'A la extracción de diseño (93 %) no es aplicable: se muestra sólo para comparar.'],
+      vars: 'k ∝ D·C/r0² (igual que GB).', data: 'Igual que GB.'
+    },
+    F1: {
+      fen: 'Reacción que ocurre al azar en todo el volumen: velocidad proporcional a la fracción sin reaccionar.',
+      mec: 'Reacción interna total en un sólido muy poroso al que el fluido accede libremente (Cap. 3 §3.7.1, Ec. 3.37–3.38); también es la forma de primer orden general (Cap. 2 Ec. 2.15–2.16).',
+      ctrl: 'No identifica una etapa controlante concreta: es una descripción semiempírica.',
+      sup: ['Acceso libre del reactivo a todo el sólido.', 'k independiente del tamaño de partícula (Cap. 4 p. 94).'],
+      lim: ['Tiempo infinito para la disolución completa (Cap. 5 Ej. 5.3).', 'La dependencia con [CN⁻] y [O₂] requiere órdenes empíricos (Ec. 2.3), que no se tienen.'],
+      vars: 'k = k0·[CN]^a·[O₂]^b·exp(−E/RT); sin efecto de r0.', data: 'Faltan los órdenes a y b y la curva X(t).'
+    },
+    MX: {
+      fen: 'Resistencias en serie: transferencia interfacial o de película más difusión en una capa de residuo, ambas comparables.',
+      mec: 'Derivado: el flujo por la capa (Ec. 4.13, con Ci ≠ 0) se iguala al flujo interfacial (Ec. 3.11 evaluada en Ci). Al eliminar Ci y aplicar el balance del núcleo se obtiene dα/dt = 1/[g′R(α)/kR + g′D(α)/kD], que con k constantes se integra como t = τR·gR(α) + τD·gD(α). El Cap. 3 (§3.1.2, p. 56) describe el control mixto de forma cualitativa; la ecuación integrada no aparece en los capítulos.',
+      ctrl: 'Ambas etapas.',
+      sup: ['Las mismas de R3 y GB.', 'Estado pseudoestacionario.'],
+      lim: ['Dos constantes: sin datos experimentales no se pueden separar (φ es hipotético).', 'Se resuelve numéricamente (Runge–Kutta de 4.º orden).'],
+      vars: 'kR como R3; kD como GB.', data: 'Faltan curvas a distintos tamaños o niveles de agitación para separar τR y τD.'
+    },
+    JM: {
+      fen: 'Curva sigmoidal de nucleación y crecimiento.', mec: 'Ecuación empírica dα/dt = k·n·tⁿ⁻¹(1−α) (Ec. 2.37), integrada en la Ec. 2.38–2.39.',
+      ctrl: 'Ninguna etapa física identificable para la cianuración.', sup: ['k′ no es una constante de velocidad verdadera (Cap. 2 p. 37).'],
+      lim: ['La disolución del oro no implica nucleación de una fase nueva: se usa sólo como función de ajuste.', 'Con n < 1 reproduce curvas desaceleradas, pero sin interpretación física.'],
+      vars: 'Órdenes empíricos; sin efecto de r0.', data: 'Requiere la curva X(t) para ajustar n y k′.'
+    }
+  };
+  function renderM2() {
+    const sec = $('#m2');
+    let h = `<h2>Módulo 2 · Selección de modelos cinéticos</h2>
+    <p class="lead">Sólo se incluyen modelos desarrollados en los capítulos 1–6 (o derivados de ellos de forma explícita). Marque los modelos que quiere comparar y elija uno como <b>principal</b>, que alimenta los KPI, el balance y la exportación. Las constantes se obtienen de una de estas fuentes: <b>anclaje</b> al punto de diseño del informe (supuesto de diseño, no ensayo), <b>valor manual</b>, <b>a priori</b> (sólo R3, con la Ec. 5.23) o <b>ajuste</b> a datos (módulo 6).</p>
+    <div class="banner warn"><b>Sin datos experimentales.</b> El informe no contiene curvas de extracción contra tiempo. En modo anclaje, todos los modelos pasan por el mismo punto (X = ${fmt(P.Xdesign, 1)} % a t = ${fmt(R.ref.tLeach, 2)} h, condición de referencia del informe) y se diferencian por la forma de la curva. Una prueba de botella con muestreo en el tiempo permitiría discriminarlos (módulo 6).</div>
+    <div class="grid" style="gap:12px">`;
+    ORDER.forEach(m => {
+      const M = KM.MODELS[m], I = INFO[m], r = R.res[m];
+      const modeOpts = [['anchor', 'Anclado al diseño del informe'], ['manual', 'Valor manual']].concat(m === 'R3' ? [['habashi', 'A priori (Ec. 5.23 + d de grano)']] : []).concat(S.fitted[m] ? [['fit', 'Ajustado (módulo 6)']] : []);
+      const kp = r ? r.kp : null;
+      const kTxt = !kp ? '' : (m === 'MX' ? `kR = ${fmt(kp.kR, 4)} h⁻¹ (τR = ${fmt(1 / kp.kR, 2)} h), kD = ${fmt(kp.kD, 4)} h⁻¹ (τD = ${fmt(1 / kp.kD, 2)} h)` : (kp.mode === 'habashi' ? `k(t=0) = ${fmt(r.kEff[0], 4)} h⁻¹` : `k${m === 'JM' ? '′' : ''} = ${fmt(kp.k, 5)} h⁻¹ (ref.)${m === 'JM' ? `, n = ${fmt(P.nJM, 2)}` : ''}`));
+      const manual = S.kmode[m] === 'manual' ? (m === 'MX'
+        ? `<label class="small">τR [h] <input type="number" step="0.1" value="${S.kman.MX_tR}" data-km="MX_tR" style="width:80px"></label> <label class="small">τD [h] <input type="number" step="0.1" value="${S.kman.MX_tD}" data-km="MX_tD" style="width:80px"></label>`
+        : `<label class="small">k [h⁻¹] <input type="number" step="0.0001" value="${S.kman[m]}" data-km="${m}" style="width:110px"></label>`) : '';
+      h += `<div class="card model-card" style="--c:${HEX[m]}">
+        <div class="hd"><label class="row"><input type="checkbox" data-en="${m}" ${S.enabled[m] ? 'checked' : ''}> Comparar</label>
+        <label class="row"><input type="radio" name="prim" data-pr="${m}" ${S.primary === m ? 'checked' : ''}> Principal</label>
+        <h3>${esc(M.name)}</h3><span class="status ${M.status}">${M.status}</span></div>
+        <div class="eq">${esc(M.eq)}</div> <span class="small muted">${esc(M.ref)}</span>
+        <div class="row small" style="margin-top:6px">Constante: <select class="inline-select" data-km-mode="${m}">${modeOpts.map(o => `<option value="${o[0]}" ${S.kmode[m] === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select> ${manual}
+          <span class="pill">${kTxt}</span> ${kp ? badge(kp.src) : ''}</div>
+        <details><summary>Fundamento físico-químico, suposiciones y limitaciones</summary>
+          <p class="small"><b>Fenómeno:</b> ${esc(I.fen)}</p><p class="small"><b>Mecanismo:</b> ${esc(I.mec)}</p><p class="small"><b>Etapa controlante:</b> ${esc(I.ctrl)}</p>
+          <p class="small"><b>Suposiciones:</b></p><ul>${I.sup.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          <p class="small"><b>Limitaciones:</b></p><ul>${I.lim.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+          <p class="small"><b>Variables operativas:</b> ${esc(I.vars)}</p><p class="small"><b>Datos:</b> ${esc(I.data)}</p></details>
+        ${r && r.warn.length ? `<div class="banner warn small" style="margin:8px 0 0">${r.warn.map(esc).join('<br>')}</div>` : ''}
+      </div>`;
+    });
+    h += `</div><h3>Modelos del libro evaluados y excluidos</h3><div class="grid g2">`;
+    KM.EXCLUDED.forEach(e => { h += `<div class="card model-card disabled"><div class="hd"><h3>${esc(e.name)}</h3><span class="status excluido">no aplicable</span></div><div class="small muted">${esc(e.ref)}</div><p class="small">${esc(e.why)}</p></div>`; });
+    h += `</div>`;
+    sec.innerHTML = h;
+    $$('[data-en]', sec).forEach(c => c.onchange = () => { S.enabled[c.dataset.en] = c.checked; update(); });
+    $$('[data-pr]', sec).forEach(c => c.onchange = () => { S.primary = c.dataset.pr; S.enabled[c.dataset.pr] = true; update(); });
+    $$('[data-km-mode]', sec).forEach(c => c.onchange = () => { const m = c.dataset.kmMode; S.kmode[m] = c.value; if (c.value === 'manual' && R.res[m]) seedManual(m); update(); });
+    $$('[data-km]', sec).forEach(c => c.onchange = () => { const v = +c.value; if (v > 0) { S.kman[c.dataset.km] = v; update(); } });
+  }
+  function seedManual(m) { const kp = R.res[m].kp; if (m === 'MX') { S.kman.MX_tR = +(1 / kp.kR).toPrecision(4); S.kman.MX_tD = +(1 / kp.kD).toPrecision(4); } else if (kp.k) S.kman[m] = +kp.k.toPrecision(4); else S.kman[m] = +R.res[m].kEff[0].toPrecision(4); }
+
+  // ---------------- Módulo 3: Simulación ----------------
+  function renderM3() {
+    const sec = $('#m3'); const { p, res, ts, b } = R; const r = res[S.primary]; const M = KM.MODELS[S.primary];
+    if (S.tView === null || S.tView > ts[ts.length - 1]) S.tView = p.tLeach;
+    const tv = S.tView; const at = arr => interp(ts, arr, tv);
+    const unitM = 'g';
+    const srcTag = r.kp.src;
+    sec.innerHTML = `<h2>Módulo 3 · Simulación cinética</h2>
+    <p class="lead">Modelo principal: <b style="color:${HEX[S.primary]}">${esc(M.name)}</b>. ${p.basis === 'planta' ? 'Base: alimentación de un día (' + fmt(b.ore_t, 0) + ' t secas, ' + fmt(b.auLeach, 1) + ' g Au a lixiviación, ' + fmt(b.water_m3, 1) + ' m³ de solución), siguiendo un elemento de pulpa en flujo pistón.' : 'Base: lote de ' + fmt(p.batchKg, 2) + ' kg.'}</p>
+    ${srcTag === 'SIM' ? `<div class="banner warn">${badge('SIM')} Resultados de una <b>simulación exploratoria sin calibración experimental</b>: la constante está anclada a la extracción de diseño supuesta en el informe (${fmt(P.Xdesign, 1)} %). No son predicciones validadas.</div>` : ''}
+    ${srcTag === 'AJU' ? `<div class="banner ok">${badge('AJU')} Constante ajustada a los datos cargados en el módulo 6.</div>` : ''}
+    <div class="row" style="margin-bottom:10px"><label>Tiempo de consulta: <b id="tvLab">${fmt(tv, 2)} h</b></label><input type="range" id="tv" min="0" max="${ts[ts.length - 1]}" step="${(ts[1] - ts[0]).toFixed(4)}" value="${tv}" style="width:320px;accent-color:var(--accent)">
+      <button class="btn sm" id="tvRes">Ir al final de la lixiviación (${fmt(p.tLeach, 2)} h)</button>
+      <label class="small">Horizonte: <input type="number" id="tmf" step="0.1" min="1" max="4" value="${P.tmaxFactor}" style="width:60px"> × t lixiviación</label></div>
+    <div class="kpis">
+      ${kpi('Extracción de oro', fmt(at(r.X) * 100, 2), '%', 'MOD')}
+      ${kpi('Fracción reaccionada α', fmt(at(r.alpha), 4), '–', 'MOD')}
+      ${kpi('Masa de oro disuelta', fmt(at(r.mDis), p.basis === 'planta' ? 1 : 4), unitM, 'MOD')}
+      ${kpi('Masa de oro remanente en el sólido', fmt(at(r.mRes), p.basis === 'planta' ? 1 : 4), unitM, 'MOD')}
+      ${kpi('Concentración de Au equivalente', fmt(at(r.C), 3), 'mg/L (sin adsorción)', 'MOD')}
+      ${kpi('Velocidad instantánea', fmt(at(r.rate) * p.alphaInf * 100, 3), '% / h', 'MOD')}
+      ${kpi('Velocidad másica', fmt(at(r.rate) * p.alphaInf * b.auLeach, 3), 'g / h', 'MOD')}
+      ${kpi('Constante efectiva k(t)', fmt(at(r.kEff), 5), 'h⁻¹', r.kp.src)}
+      ${kpi('Ley del residuo', fmt(b.ore_t > 0 ? at(r.mRes) / b.ore_t : 0, 3), 'g/t', 'MOD')}
+      ${kpi('t para 50 % / 90 %', (r.t50 ? fmt(r.t50, 1) : '>') + ' / ' + (r.t90 ? fmt(r.t90, 1) : '> ' + fmt(ts[ts.length - 1], 0)), 'h', 'MOD')}
+    </div>
+    <div class="banner info small">La <b>concentración equivalente</b> es C = m_disuelta / V_solución, la que habría sin carbón. En el CIL el carbón adsorbe el oro a medida que se disuelve, y el informe fija 0,02 mg/L en la solución final. Calcular la concentración real en solución exige isotermas de adsorción, que no figuran en los capítulos ni en el informe.</div>
+    <h3>Comparación de modelos en t = ${fmt(tv, 2)} h</h3>
+    <div class="tablewrap" style="max-height:none"><table><tr><th>Modelo</th><th>Estado</th><th class="num">X [%]</th><th class="num">α</th><th class="num">m disuelta [g]</th><th class="num">m remanente [g]</th><th class="num">C eq. [mg/L]</th><th class="num">dX/dt [%/h]</th><th class="num">k(t) [h⁻¹]</th><th class="num">X(t lix.) [%]</th><th class="num">t90 [h]</th><th>Origen</th></tr>
+    ${Object.values(res).filter(q => S.enabled[q.m] || q.m === S.primary).map(q => `<tr><td><span style="color:${HEX[q.m]}">■</span> ${esc(KM.MODELS[q.m].short)}${q.m === S.primary ? ' <b>(principal)</b>' : ''}</td><td><span class="status ${KM.MODELS[q.m].status}">${KM.MODELS[q.m].status}</span></td>
+      <td class="num">${fmt(interp(ts, q.X, tv) * 100, 2)}</td><td class="num">${fmt(interp(ts, q.alpha, tv), 4)}</td><td class="num">${fmt(interp(ts, q.mDis, tv), 2)}</td><td class="num">${fmt(interp(ts, q.mRes, tv), 2)}</td><td class="num">${fmt(interp(ts, q.C, tv), 3)}</td>
+      <td class="num">${fmt(interp(ts, q.rate, tv) * p.alphaInf * 100, 3)}</td><td class="num">${fmt(interp(ts, q.kEff, tv), 5)}</td><td class="num">${fmt(q.Xend * 100, 2)}</td><td class="num">${q.t90 ? fmt(q.t90, 2) : '–'}</td><td>${badge(q.kp.src)}</td></tr>`).join('')}</table></div>
+    <h3>Evolución temporal del modelo principal</h3>
+    <div class="tablewrap"><table id="simTable"></table></div>`;
+    const step = Math.max(1, Math.round(ts.length / 60));
+    let tb = `<tr><th class="num">t [h]</th><th class="num">X [%]</th><th class="num">α</th><th class="num">m disuelta [g]</th><th class="num">m remanente [g]</th><th class="num">Cierre m0 − md − mr [g]</th><th class="num">C eq. [mg/L]</th><th class="num">dX/dt [%/h]</th><th class="num">k(t) [h⁻¹]</th><th class="num">[CN] [g/L]</th></tr>`;
+    for (let i = 0; i < ts.length; i += step) tb += `<tr><td class="num">${fmt(ts[i], 2)}</td><td class="num">${fmt(r.X[i] * 100, 2)}</td><td class="num">${fmt(r.alpha[i], 4)}</td><td class="num">${fmt(r.mDis[i], 2)}</td><td class="num">${fmt(r.mRes[i], 2)}</td><td class="num">${fmt(b.auLeach - r.mDis[i] - r.mRes[i], 1)}</td><td class="num">${fmt(r.C[i], 3)}</td><td class="num">${fmt(r.rate[i] * p.alphaInf * 100, 3)}</td><td class="num">${fmt(r.kEff[i], 5)}</td><td class="num">${fmt(KM.cnAt(ts[i], p), 3)}</td></tr>`;
+    $('#simTable').innerHTML = tb;
+    $('#tv').oninput = e => { S.tView = +e.target.value; renderM3(); };
+    $('#tvRes').onclick = () => { S.tView = p.tLeach; renderM3(); };
+    $('#tmf').onchange = e => { P.tmaxFactor = Math.min(4, Math.max(1, +e.target.value)); syncInputs(); update(); };
+  }
+  function kpi(l, v, u, src) { return `<div class="kpi"><div class="l">${esc(l)}</div><div class="v">${v} <span class="u">${esc(u)}</span></div><div class="t">${badge(src)}</div></div>`; }
+
+  // ---------------- Módulo 4: Gráficas ----------------
+  function seriesFor(key, mult, models) {
+    return models.map(m => { const q = R.res[m]; return { name: KM.MODELS[m].short + (m === S.primary ? ' (principal)' : ''), color: HEX[m], dash: DSH[m], x: Array.from(R.ts), y: Array.from(q[key], v => v * mult) }; });
+  }
+  function renderM4() {
+    const sec = $('#m4'); const { p, ts } = R; const pm = S.primary; const q = R.res[pm];
+    const en = ORDER.filter(m => S.enabled[m] && R.res[m]);
+    const vl = [{ x: p.tLeach, label: 'fin lixiviación ' + fmt(p.tLeach, 1) + ' h' }];
+    sec.innerHTML = `<h2>Módulo 4 · Gráficas interactivas</h2><p class="lead">Pase el cursor sobre las gráficas para consultar valores. Cada gráfica se exporta como SVG o PNG. Línea vertical: fin del tiempo de lixiviación. ${q.kp.src === 'SIM' ? badge('SIM') + ' Curvas de simulación exploratoria.' : ''}</p>
+    <div class="grid g2"><div id="c1"></div><div id="c2"></div><div id="c3"></div><div id="c4"></div></div><div style="margin-top:14px" id="c5"></div>`;
+    const name = KM.MODELS[pm].short;
+    lineChart($('#c1'), { title: 'Extracción de oro vs tiempo – ' + name, sub: 'Modelo ' + KM.MODELS[pm].eq, xLabel: 'Tiempo de lixiviación t [h]', yLabel: 'Extracción X [%]', xName: 't', xUnit: 'h', yUnit: '%', yMin: 0, yMax: 100, vlines: vl, hlines: [{ y: P.Xdesign, label: 'diseño ' + fmt(P.Xdesign, 1) + ' %' }], series: [{ name, color: HEX[pm], x: Array.from(ts), y: Array.from(q.X, v => v * 100) }] });
+    lineChart($('#c2'), { title: 'Masa de oro disuelta y remanente vs tiempo – ' + name, sub: p.basis === 'planta' ? 'Base: alimentación de 1 día' : 'Base: lote', xLabel: 'Tiempo t [h]', yLabel: 'Masa de oro [g]', xName: 't', xUnit: 'h', yUnit: 'g', yMin: 0, vlines: vl, series: [{ name: 'Disuelta (' + name + ')', color: HEX[pm], x: Array.from(ts), y: Array.from(q.mDis) }, { name: 'Remanente en el sólido', color: '#6b6a65', dash: '6 4', x: Array.from(ts), y: Array.from(q.mRes) }] });
+    lineChart($('#c3'), { title: 'Concentración de oro en solución (equivalente) vs tiempo', sub: 'C = m disuelta / V solución, sin adsorción en carbón', xLabel: 'Tiempo t [h]', yLabel: 'Au en solución [mg/L]', xName: 't', xUnit: 'h', yUnit: 'mg/L', yMin: 0, vlines: vl, series: seriesFor('C', 1, en) });
+    const rateMax = Math.max(...en.map(m => Math.max(...Array.from(R.res[m].rate).slice(3).filter(isFinite)))) * p.alphaInf * 100;
+    lineChart($('#c4'), { title: 'Velocidad de lixiviación dX/dt vs tiempo', sub: 'Para GB y Jander la velocidad tiende a ∞ en t → 0 (espesor de capa nulo)', xLabel: 'Tiempo t [h]', yLabel: 'Velocidad dX/dt [% / h]', xName: 't', xUnit: 'h', yUnit: '%/h', yMin: 0, yMax: Math.min(rateMax * 1.05, 60), vlines: vl, series: seriesFor('rate', p.alphaInf * 100, en) });
+    lineChart($('#c5'), { title: 'Comparación de modelos cinéticos: extracción vs tiempo', sub: 'Modelos marcados en el módulo 2', xLabel: 'Tiempo de lixiviación t [h]', yLabel: 'Extracción X [%]', xName: 't', xUnit: 'h', yUnit: '%', yMin: 0, yMax: 100, height: 340, vlines: vl, hlines: [{ y: P.Xdesign, label: 'diseño' }], series: seriesFor('X', 100, en) });
+  }
+
+  // ---------------- Módulo 5: Escenarios ----------------
+  const SVARS = {
+    tpd: { l: 'Capacidad de la planta (cambia el tiempo de residencia)', u: 't/d', def: '150, 200, 250, 300', planta: true },
+    nCIL: { l: 'Tanques CIL en servicio', u: 'u', def: '4, 5, 6', planta: true },
+    P80_um: { l: 'Tamaño de molienda P80', u: 'µm', def: '53, 75, 106, 150' },
+    dAu_um: { l: 'Diámetro de grano de oro', u: 'µm', def: '20, 30, 42, 60' },
+    T_C: { l: 'Temperatura', u: '°C', def: '15, 25, 35' },
+    cn1: { l: 'Cianuro libre en tanque 1 (último = 0,43·tanque 1)', u: 'g/L', def: '0.15, 0.25, 0.35, 0.5' },
+    o2: { l: 'Oxígeno disuelto', u: 'mg/L', def: '4, 6, 8, 15, 20' },
+    delta_um: { l: 'Capa límite δ (agitación: menor δ = más agitación)', u: 'µm', def: '20, 35, 50, 90' },
+    solidsPct: { l: 'Sólidos en la pulpa (cambia el tiempo de residencia)', u: '%', def: '40, 45, 50, 55', planta: true }
+  };
+  const EFFECT = { // cómo entra cada variable en cada modelo
+    tpd: { R3: 't_res = V/Q', GB: 't_res = V/Q', JA: 't_res = V/Q', F1: 't_res = V/Q', MX: 't_res = V/Q', JM: 't_res = V/Q' },
+    nCIL: { R3: 't_res ∝ n', GB: 't_res ∝ n', JA: 't_res ∝ n', F1: 't_res ∝ n', MX: 't_res ∝ n', JM: 't_res ∝ n' },
+    P80_um: { R3: 'no interviene*', GB: 'k ∝ 1/r0² (Ec. 4.23)', JA: 'k ∝ 1/r0² (Ec. 4.10)', F1: 'no (Cap. 4 p. 94)', MX: 'kD ∝ 1/r0²', JM: 'no' },
+    dAu_um: { R3: 'k ∝ 1/r0 (Ec. 3.15)', GB: 'no', JA: 'no', F1: 'no', MX: 'kR ∝ 1/r0', JM: 'no' },
+    T_C: { R3: 'Arrhenius, E_R (Ec. 1.6)', GB: 'Arrhenius, E_D', JA: 'Arrhenius, E_D', F1: 'Arrhenius, E_E', MX: 'E_R y E_D', JM: 'Arrhenius, E_E' },
+    cn1: { R3: 'R/A (Ec. 5.23)', GB: 'Φ(CN,O₂) (Ec. 4.23 + 5.23)', JA: 'Φ(CN,O₂)', F1: '[CN]^a (Ec. 2.3)', MX: 'ambas', JM: '[CN]^a' },
+    o2: { R3: 'R/A (Ec. 5.23)', GB: 'Φ(CN,O₂)', JA: 'Φ(CN,O₂)', F1: '[O₂]^b (Ec. 2.3)', MX: 'ambas', JM: '[O₂]^b' },
+    delta_um: { R3: 'k ∝ 1/δ (Ec. 5.4, 5.23)', GB: 'no (difusión en el sólido)', JA: 'no', F1: 'no', MX: 'sólo kR', JM: 'no' },
+    solidsPct: { R3: 't_res y V_sol', GB: 't_res y V_sol', JA: 't_res y V_sol', F1: 't_res y V_sol', MX: 't_res y V_sol', JM: 't_res y V_sol' }
+  };
+  let scnVar = 'o2', scnVals = SVARS.o2.def;
+  function renderM5() {
+    const sec = $('#m5');
+    const v = SVARS[scnVar];
+    sec.innerHTML = `<h2>Módulo 5 · Análisis de parámetros operativos</h2>
+    <p class="lead">Barrido de una variable con los demás parámetros fijos en sus valores actuales. Sólo producen efecto las variables que el modelo contiene; la matriz inferior muestra cómo entra cada una.</p>
+    <div class="card"><div class="row"><label>Variable: <select id="sv" class="inline-select">${Object.entries(SVARS).filter(([k, o]) => !o.planta || P.basis === 'planta').map(([k, o]) => `<option value="${k}" ${k === scnVar ? 'selected' : ''}>${esc(o.l)}</option>`).join('')}</select></label>
+      <label>Valores [${esc(v.u)}]: <input id="svv" value="${esc(scnVals)}" style="width:230px" class="inline-select"></label><button class="btn primary" id="svRun">Calcular</button></div>
+      <div class="small muted" style="margin-top:6px">Modelo de las curvas: principal (${esc(KM.MODELS[S.primary].short)}). La gráfica derecha muestra X al final de la lixiviación para todos los modelos marcados.</div></div>
+    <div class="grid g2" style="margin-top:12px"><div id="s1"></div><div id="s2"></div></div>
+    <div id="stab" style="margin-top:12px"></div>
+    <h3>Cómo interviene cada variable en cada modelo</h3>
+    <div class="card"><table class="mat"><tr><th>Variable</th>${ORDER.map(m => `<th><span style="color:${HEX[m]}">■</span> ${esc(KM.MODELS[m].short)}</th>`).join('')}</tr>
+    ${Object.keys(EFFECT).map(k => `<tr><td>${esc(SVARS[k].l)}</td>${ORDER.map(m => `<td class="small">${esc(EFFECT[k][m])}</td>`).join('')}</tr>`).join('')}</table>
+    <p class="small muted">* En R3 el tamaño controlante es el del grano de oro, no el de la partícula de mena. Moler más fino sólo afecta a R3 si libera oro ocluido, y ese efecto no está modelado. El pH no aparece en ninguna ecuación cinética de los capítulos: sólo se verifica su rango de seguridad (informe §12). Las variaciones de temperatura no modifican la solubilidad del O₂ (sin datos), aunque el informe advierte que el agua caliente disuelve menos O₂.</p></div>
+    <h3>Escenarios guardados</h3>
+    <div class="card"><div class="row"><input id="scName" placeholder="Nombre del escenario" class="inline-select" style="width:240px"><button class="btn" id="scSave">Guardar la configuración actual</button><button class="btn" id="scClear">Borrar todos</button></div><div id="scList" style="margin-top:10px"></div></div>`;
+    $('#sv').onchange = e => { scnVar = e.target.value; scnVals = SVARS[scnVar].def; renderM5(); };
+    $('#svRun').onclick = () => { scnVals = $('#svv').value; drawSweep(); };
+    $('#scSave').onclick = () => {
+      const q = R.res[S.primary];
+      S.scenarios.push({ name: $('#scName').value || 'Escenario ' + (S.scenarios.length + 1), model: S.primary, P: JSON.parse(JSON.stringify(P)), ts: Array.from(R.ts), X: Array.from(q.X), Xend: q.Xend, tLeach: R.p.tLeach, prod: R.bal.prod, rec: R.bal.recovery });
+      if (S.scenarios.length > 8) S.scenarios.shift(); drawSaved();
+    };
+    $('#scClear').onclick = () => { S.scenarios = []; drawSaved(); };
+    drawSweep(); drawSaved();
+  }
+  function drawSweep() {
+    const vals = scnVals.split(/[;,\s]+/).map(s => parseFloat(s.replace(',', '.'))).filter(isFinite).slice(0, 8);
+    const out = [], sum = {};
+    const en = ORDER.filter(m => S.enabled[m]); if (!en.includes(S.primary)) en.unshift(S.primary);
+    vals.forEach((v, i) => {
+      const p = Object.assign({}, P, { [scnVar]: v }); if (scnVar === 'cn1') p.cnN = +(v * D.cnN / D.cn1).toFixed(4);
+      const rt = KM.residenceTimes(p); p.tLeach = rt.tLeach; const ref = refCondition(p);
+      const ts = KM.timeGrid(Math.max(R.p.tLeach, p.tLeach) * P.tmaxFactor, 400);
+      en.forEach(m => { const r = runModel(m, p, ref, ts, rt.b); (sum[m] = sum[m] || []).push(r.Xend * 100); if (m === S.primary) out.push({ v, r, p, b: rt.b, bal: KM.plantBalance(p, r.Xend) }); });
+    });
+    const vs = SVARS[scnVar];
+    lineChart($('#s1'), { title: `Efecto de ${vs.l.split(' (')[0].toLowerCase()} – ${KM.MODELS[S.primary].short}`, xLabel: 'Tiempo t [h]', yLabel: 'Extracción X [%]', xName: 't', xUnit: 'h', yMin: 0, yMax: 100, forceLegend: true, series: out.map((o, i) => ({ name: `${fmt(o.v, 2)} ${vs.u}`, color: SCN[i], dash: UI.DASH[i % 7], x: Array.from(o.r.ts), y: Array.from(o.r.X, x => x * 100) })), vlines: out.length && SVARS[scnVar].planta ? [] : [{ x: R.p.tLeach, label: 't lix.' }] });
+    lineChart($('#s2'), { title: 'Extracción al final de la lixiviación vs ' + vs.l.split(' (')[0].toLowerCase(), xLabel: `${vs.l.split(' (')[0]} [${vs.u}]`, yLabel: 'X(t lixiviación) [%]', xName: vs.l.split(' (')[0], xUnit: vs.u, yMin: 0, yMax: 100, forceLegend: true, series: en.map(m => ({ name: KM.MODELS[m].short, color: HEX[m], dash: DSH[m], x: vals, y: sum[m] })).concat(en.map(m => ({ name: '', color: HEX[m], type: 'scatter', r: 3.5, x: vals, y: sum[m] }))).filter(s => s.name !== '' || true) });
+    $('#stab').innerHTML = `<div class="card"><table><tr><th>${esc(vs.l)} [${esc(vs.u)}]</th><th class="num">t lixiviación [h]</th><th class="num">X(t lix.) [%]</th><th class="num">t90 [h]</th><th class="num">Ley del residuo [g/t]</th>${P.basis === 'planta' ? '<th class="num">Producción de Au [g/d]</th><th class="num">Recuperación global [%]</th>' : ''}<th>Origen</th></tr>
+      ${out.map(o => `<tr><td>${fmt(o.v, 2)}</td><td class="num">${fmt(o.p.tLeach, 2)}</td><td class="num">${fmt(o.r.Xend * 100, 2)}</td><td class="num">${o.r.t90 ? fmt(o.r.t90, 2) : '> horizonte'}</td><td class="num">${fmt(o.b.ore_t ? (o.b.auLeach * (1 - o.r.Xend)) / o.b.ore_t : 0, 3)}</td>${P.basis === 'planta' ? `<td class="num">${fmt(o.bal.prod, 1)}</td><td class="num">${fmt(o.bal.recovery * 100, 2)}</td>` : ''}<td>${badge(o.r.kp.src)}</td></tr>`).join('')}</table></div>`;
+  }
+  function drawSaved() {
+    const el = $('#scList'); if (!el) return;
+    if (!S.scenarios.length) { el.innerHTML = '<p class="small muted">No hay escenarios guardados. Ajuste parámetros en el módulo 1 y guárdelos para compararlos aquí.</p>'; return; }
+    el.innerHTML = `<div id="scChart"></div><table style="margin-top:10px"><tr><th>Escenario</th><th>Modelo</th><th class="num">t lix. [h]</th><th class="num">X [%]</th><th class="num">Producción [g/d]</th><th class="num">Recuperación [%]</th><th>Diferencias frente al informe</th></tr>${S.scenarios.map((s, i) => `<tr><td><span style="color:${SCN[i]}">■</span> ${esc(s.name)}</td><td>${esc(KM.MODELS[s.model].short)}</td><td class="num">${fmt(s.tLeach, 2)}</td><td class="num">${fmt(s.Xend * 100, 2)}</td><td class="num">${fmt(s.prod, 1)}</td><td class="num">${fmt(s.rec * 100, 2)}</td><td class="small">${Object.keys(META).filter(k => s.P[k] !== D[k]).map(k => `${META[k].label}: ${s.P[k]}`).join('; ') || 'ninguna'}</td></tr>`).join('')}</table>`;
+    lineChart($('#scChart'), { title: 'Escenarios guardados: extracción vs tiempo', xLabel: 'Tiempo t [h]', yLabel: 'Extracción X [%]', xName: 't', xUnit: 'h', yMin: 0, yMax: 100, forceLegend: true, series: S.scenarios.map((s, i) => ({ name: s.name, color: SCN[i], dash: UI.DASH[i % 7], x: s.ts, y: s.X.map(v => v * 100) })) });
+  }
+
+  // ---------------- Módulo 6: Ajuste ----------------
+  function renderM6() {
+    const sec = $('#m6');
+    sec.innerHTML = `<h2>Módulo 6 · Ajuste y validación de parámetros cinéticos</h2>
+    <div class="banner warn"><b>No hay datos experimentales en el informe.</b> Mientras no cargue datos reales, todos los resultados de la herramienta son una simulación exploratoria sin calibración experimental. El botón de demostración genera datos <b>sintéticos</b> (modelo conocido + ruido), útiles sólo para comprobar el procedimiento de ajuste; no son mediciones.</div>
+    <div class="grid g2"><div class="card"><h3>1. Datos</h3>
+      <p class="small">Formato CSV con encabezado. Columnas mínimas: <code>tiempo</code>, <code>extraccion</code>. Opcionales: <code>ensayo</code>, <code>T_C</code>, <code>d_um</code> (para Arrhenius y efecto del tamaño). Separador coma, punto y coma o tabulación.</p>
+      <div class="row small"><label>Unidad de tiempo <select id="fu_t" class="inline-select"><option value="h">h</option><option value="min">min</option><option value="d">d</option></select></label>
+      <label>Extracción en <select id="fu_x" class="inline-select"><option value="pct">%</option><option value="frac">fracción (0–1)</option></select></label>
+      <label class="btn sm" style="cursor:pointer">Cargar archivo CSV<input type="file" id="fFile" accept=".csv,.txt,.tsv" style="display:none"></label>
+      <button class="btn sm" id="fDemo">Datos sintéticos de demostración</button><button class="btn sm" id="fDemo2">Demostración con 3 temperaturas</button></div>
+      <textarea id="fTxt" placeholder="tiempo,extraccion&#10;0.5,12.1&#10;1,20.4&#10;...">${S.data ? esc(S.rawText || '') : ''}</textarea>
+      <div class="row" style="margin-top:8px"><label class="small"><input type="checkbox" id="fAI"> Ajustar también α∞ (fracción lixiviable máxima)</label>
+      <label class="small">n inicial (J–M) <input type="number" id="fN0" value="1" step="0.1" style="width:60px"></label>
+      <button class="btn primary" id="fRun">Ajustar modelos</button></div>
+      <div id="fMsg" class="small" style="margin-top:6px"></div></div>
+      <div class="card"><h3>Procedimiento</h3><ol class="small">
+        <li>Para cada modelo se minimiza la suma de cuadrados SSR = Σ(X_exp − X_mod)² en el espacio de extracción (Nelder–Mead sobre ln k, con varios arranques).</li>
+        <li>Indicadores: R², R² ajustado, RMSE (en puntos de %) y AIC = n·ln(SSR/n) + 2p para comparar modelos con distinto número de parámetros.</li>
+        <li>Enfoque integral del libro (Cap. 2 §2.2.1): g(α) contra t debe ser una recta que pasa por el origen con pendiente k.</li>
+        <li>Gráfica de tiempo reducido (Cap. 2 §2.6, Tabla 2.2): α contra t/t₀.₅ se compara con las curvas teóricas sin necesidad de conocer k.</li>
+        <li>Con varios ensayos: ln k contra 1/T da E (Ec. 1.6, Cap. 2 §2.2.1), y log k contra log d da la pendiente que identifica el mecanismo (−1 control químico o de película, −2 difusión en capa, 0 reacción interna; Cap. 4 p. 93).</li>
+        <li>Los residuos deben distribuirse al azar alrededor de 0; una tendencia sistemática indica que el modelo no describe el mecanismo.</li></ol></div></div>
+    <div id="fOut"></div>`;
+    $('#fu_t').value = S.fu_t || 'h'; $('#fu_x').value = S.fu_x || 'pct';
+    $('#fFile').onchange = e => { const f = e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { $('#fTxt').value = rd.result; S.dataSynthetic = false; toast('Archivo cargado: ' + f.name); }; rd.readAsText(f); };
+    $('#fDemo').onclick = () => {
+      const times = [0.5, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24];
+      const d = KM.synthData('GB', { k: 0.0143, alphaInf: 1 }, times, 0.012, 2026);
+      $('#fTxt').value = '# DATOS SINTÉTICOS DE DEMOSTRACIÓN (GB, k = 0,0143 h^-1, ruido 1,2 %) - NO SON EXPERIMENTALES\ntiempo,extraccion\n' + d.map(q => `${q.t},${(q.X * 100).toFixed(2)}`).join('\n');
+      $('#fu_t').value = 'h'; $('#fu_x').value = 'pct'; S.dataSynthetic = true; runFit();
+    };
+    $('#fDemo2').onclick = () => {
+      const times = [1, 2, 4, 6, 8, 12, 16, 24]; let lines = ['# DATOS SINTÉTICOS (R3, E = 15 kJ/mol) - NO SON EXPERIMENTALES', 'ensayo,T_C,tiempo,extraccion'];
+      [[15, 'A'], [25, 'B'], [35, 'C']].forEach(([T, id], j) => { const k = 0.04 * Math.exp(-15000 / 8.314 * (1 / (T + 273.15) - 1 / 298.15)); KM.synthData('R3', { k, alphaInf: 1 }, times, 0.01, 11 + j).forEach(q => lines.push(`${id},${T},${q.t},${(q.X * 100).toFixed(2)}`)); });
+      $('#fTxt').value = lines.join('\n'); $('#fu_t').value = 'h'; $('#fu_x').value = 'pct'; S.dataSynthetic = true; runFit();
+    };
+    $('#fRun').onclick = () => { if (!/SINT[ÉE]TICOS/i.test($('#fTxt').value)) S.dataSynthetic = false; runFit(); };
+    if (S.fit) drawFit();
+  }
+  function readData() {
+    const txt = $('#fTxt').value; S.rawText = txt; S.fu_t = $('#fu_t').value; S.fu_x = $('#fu_x').value;
+    const { header, rows } = parseCSV(txt); const h = header.map(s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''));
+    const idx = (...names) => h.findIndex(c => names.some(n => c.startsWith(n)));
+    let it = idx('tiempo', 't_', 'time', 't'), ix = idx('extrac', 'x', 'recup', 'alpha', 'alfa'), ie = idx('ensayo', 'test', 'id'), iT = idx('t_c', 'temp'), id = idx('d_um', 'd', 'tam', 'size');
+    if (it === iT && it >= 0) it = h.findIndex((c, i) => i !== iT && c.startsWith('t'));
+    if (it < 0 || ix < 0) { if (h.length >= 2 && header[0] === 'c0') { it = 0; ix = 1; } else throw new Error('No se encontraron columnas de tiempo y extracción.'); }
+    const ft = S.fu_t === 'min' ? 1 / 60 : S.fu_t === 'd' ? 24 : 1, fx = S.fu_x === 'pct' ? 0.01 : 1;
+    const pts = rows.filter(r => typeof r[it] === 'number' && typeof r[ix] === 'number').map(r => ({ t: r[it] * ft, X: r[ix] * fx, test: ie >= 0 ? String(r[ie]) : 'único', T: iT >= 0 && typeof r[iT] === 'number' ? r[iT] : null, d: id >= 0 && typeof r[id] === 'number' ? r[id] : null }));
+    if (pts.length < 3) throw new Error('Se necesitan al menos 3 puntos (t, X).');
+    if (pts.some(q => q.X < 0 || q.X > 1.0001)) throw new Error('Hay extracciones fuera de 0–100 %. Revise la unidad seleccionada.');
+    if (pts.some(q => q.t < 0)) throw new Error('Hay tiempos negativos.');
+    return pts.filter(q => q.t > 0);
+  }
+  function runFit() {
+    const msg = $('#fMsg');
+    try {
+      const pts = readData(); S.data = pts;
+      const tests = [...new Set(pts.map(q => q.test))];
+      const fitAI = $('#fAI').checked, n0 = +$('#fN0').value || 1;
+      const main = tests.length === 1 ? pts : pts.filter(q => q.test === tests[0]);
+      const fits = ORDER.map(m => { try { return KM.fitModel(m, main, { fitAlphaInf: fitAI, n0 }); } catch (e) { return null; } }).filter(Boolean);
+      fits.sort((a, b) => a.AIC - b.AIC);
+      let per = null;
+      if (tests.length > 1) {
+        per = tests.map(id => { const d = pts.filter(q => q.test === id); return { id, T: d[0].T, d: d[0].d, n: d.length, fits: Object.fromEntries(ORDER.filter(m => m !== 'MX').map(m => [m, KM.fitModel(m, d, { fitAlphaInf: false, n0 })])) }; });
+      }
+      S.fit = { fits, main, tests, per, synthetic: S.dataSynthetic, fitAI, sel: fits[0].modelId };
+      msg.innerHTML = `<span class="okk">✓</span> ${pts.length} puntos leídos, ${tests.length} ensayo(s). ${S.dataSynthetic ? badge('SIM', 'DATOS SINTÉTICOS') : badge('AJU', 'DATOS DEL USUARIO')}`;
+      drawFit();
+    } catch (e) { msg.innerHTML = `<span class="bd">✗ ${esc(e.message)}</span>`; }
+  }
+  function prmText(f) { const q = f.prm; return f.modelId === 'MX' ? `τR = ${fmt(q.tR, 3)} h; τD = ${fmt(q.tD, 3)} h` : `k${f.modelId === 'JM' ? '′' : ''} = ${fmt(q.k, 5)} h⁻¹${f.modelId === 'JM' ? `; n = ${fmt(q.n, 3)}` : ''}` + (S.fit.fitAI ? `; α∞ = ${fmt(q.alphaInf, 3)}` : ''); }
+  function drawFit() {
+    const F = S.fit, out = $('#fOut'); if (!out) return;
+    const tag = F.synthetic ? badge('SIM', 'AJUSTE A DATOS SINTÉTICOS') : badge('AJU');
+    const sel = F.fits.find(f => f.modelId === F.sel) || F.fits[0];
+    out.innerHTML = `<h3>2. Resultados del ajuste ${F.tests.length > 1 ? '(ensayo «' + esc(F.tests[0]) + '»)' : ''} ${tag}</h3>
+    ${F.synthetic ? '<div class="banner warn small">Las constantes ajustadas a datos sintéticos <b>no</b> son determinaciones experimentales: sólo comprueban que el procedimiento recupera el modelo con el que se generaron los datos.</div>' : ''}
+    <div class="card"><table><tr><th>Rango (AIC)</th><th>Modelo</th><th>Parámetros ajustados</th><th class="num">R²</th><th class="num">R² aj.</th><th class="num">RMSE [%]</th><th class="num">AIC</th><th class="num">R² lineal g(α)–t</th><th></th></tr>
+    ${F.fits.map((f, i) => { const lin = KM.linearization(f.modelId, F.main, f.prm.n); return `<tr><td>${i + 1}</td><td><span style="color:${HEX[f.modelId]}">■</span> ${esc(KM.MODELS[f.modelId].short)} <span class="status ${KM.MODELS[f.modelId].status}">${KM.MODELS[f.modelId].status}</span></td><td>${prmText(f)}</td><td class="num">${fmt(f.R2, 4)}</td><td class="num">${fmt(f.R2adj, 4)}</td><td class="num">${fmt(f.RMSE * 100, 3)}</td><td class="num">${fmt(f.AIC, 1)}</td><td class="num">${lin ? fmt(lin.R2, 4) : '–'}</td>
+      <td><button class="btn sm" data-sel="${f.modelId}">Ver</button> <button class="btn sm" data-use="${f.modelId}">Usar en la simulación</button></td></tr>`; }).join('')}</table>
+    <p class="small muted">Un R² alto en varios modelos a la vez es habitual con pocos puntos o con extracciones bajas: el libro advierte que para distinguir los modelos de difusión hacen falta valores de α suficientemente altos (Cap. 4, pregunta 6). Si un modelo de estado «condicional» o «empírico» gana, compruebe primero que su mecanismo sea físicamente posible (módulo 2).</p></div>
+    <div class="grid g2" style="margin-top:12px"><div id="f1"></div><div id="f2"></div><div id="f3"></div><div id="f4"></div></div><div id="fMulti"></div>`;
+    $$('[data-sel]', out).forEach(b => b.onclick = () => { F.sel = b.dataset.sel; drawFit(); });
+    $$('[data-use]', out).forEach(b => b.onclick = () => {
+      const f = F.fits.find(x => x.modelId === b.dataset.use), m = f.modelId;
+      if (m === 'MX') { S.kman.MX_tR = f.prm.tR; S.kman.MX_tD = f.prm.tD; } else { S.kman[m] = f.prm.k; if (m === 'JM') { P.nJM = f.prm.n; } }
+      if (F.fitAI) P.alphaInf = +f.prm.alphaInf.toFixed(4);
+      S.fitted[m] = { synthetic: F.synthetic, R2: f.R2, RMSE: f.RMSE }; S.kmode[m] = 'fit'; S.enabled[m] = true; S.primary = m;
+      syncInputs(); update(); toast(`Constante de ${KM.MODELS[m].short} aplicada a la simulación (${F.synthetic ? 'datos sintéticos' : 'ajustada'})`);
+      toast('Advertencia: k se ajustó a las condiciones del ensayo; la simulación la aplica a las condiciones del módulo 1.');
+    });
+    const tmax = Math.max(...F.main.map(q => q.t)) * 1.1, tt = KM.timeGrid(tmax, 300);
+    const curves = F.fits.map(f => ({ name: KM.MODELS[f.modelId].short, color: HEX[f.modelId], dash: DSH[f.modelId], x: tt, y: tt.map(t => f.prm.alphaInf * KM.modelAlphaConst(f.modelId, t, f.prm) * 100) }));
+    lineChart($('#f1'), { title: 'Datos vs curvas ajustadas', sub: F.synthetic ? 'Datos sintéticos' : 'Datos del usuario', xLabel: 'Tiempo t [h]', yLabel: 'Extracción X [%]', xName: 't', xUnit: 'h', yMin: 0, yMax: 100, series: [{ name: F.synthetic ? 'Datos sintéticos' : 'Datos experimentales', color: '#151513', type: 'scatter', x: F.main.map(q => q.t), y: F.main.map(q => q.X * 100) }, ...curves] });
+    lineChart($('#f2'), { title: 'Residuos del ajuste – ' + KM.MODELS[sel.modelId].short, sub: 'X_exp − X_modelo', xLabel: 'Tiempo t [h]', yLabel: 'Residuo [puntos %]', xName: 't', xUnit: 'h', series: [{ name: 'Residuo', color: HEX[sel.modelId], type: 'bar0', x: F.main.map(q => q.t), y: sel.resid.map(r => r * 100) }, { name: '', color: HEX[sel.modelId], type: 'scatter', x: F.main.map(q => q.t), y: sel.resid.map(r => r * 100) }], hlines: [{ y: 0, label: '' }] });
+    const lin = KM.linearization(sel.modelId, F.main, sel.prm.n);
+    if (lin) lineChart($('#f3'), { title: 'Enfoque integral: g(α) vs t – ' + KM.MODELS[sel.modelId].short, sub: KM.MODELS[sel.modelId].eq + ` · pendiente = ${fmt(lin.k, 5)} h⁻¹ · R² = ${fmt(lin.R2, 4)}`, xLabel: 'Tiempo t [h]', yLabel: 'g(α)', xName: 't', xUnit: 'h', yMin: 0, series: [{ name: 'g(α) datos', color: '#151513', type: 'scatter', x: lin.pts.map(q => q.t), y: lin.pts.map(q => q.g) }, { name: 'Recta por el origen', color: HEX[sel.modelId], x: [0, tmax], y: [0, lin.k * tmax] }] });
+    else $('#f3').innerHTML = '<div class="card small muted">El modelo mixto no tiene una única función g(α) lineal: se evalúa en el espacio X(t).</div>';
+    const t5 = KM.t05(F.main.map(q => ({ t: q.t, X: q.X / (F.fitAI ? sel.prm.alphaInf : 1) })));
+    if (t5) {
+      const alist = []; for (let a = 0.02; a <= 0.95; a += 0.01) alist.push(a);
+      lineChart($('#f4'), { title: 'Gráfica de tiempo reducido (Cap. 2 §2.6)', sub: `t₀.₅ = ${fmt(t5, 2)} h (interpolado). Curvas teóricas de la Tabla 2.2`, xLabel: 'Tiempo reducido t / t₀.₅', yLabel: 'Fracción reaccionada α', xName: 't/t₀.₅', yMin: 0, yMax: 1, xMin: 0, xMax: 3, series: [{ name: 'Datos', color: '#151513', type: 'scatter', x: F.main.map(q => q.t / t5), y: F.main.map(q => q.X / (F.fitAI ? sel.prm.alphaInf : 1)) }, ...['R3', 'GB', 'JA', 'F1'].map(m => ({ name: m === 'R3' ? 'R3' : m === 'GB' ? 'D4 (GB)' : m === 'JA' ? 'D3 (Jander)' : 'F1', color: HEX[m], dash: DSH[m], x: alist.map(a => KM.G[m].g(a) / KM.G[m].g(0.5)), y: alist }))] });
+    } else $('#f4').innerHTML = '<div class="card small muted">Los datos no alcanzan α = 0,5: no se puede construir la gráfica de tiempo reducido.</div>';
+    if (F.per) drawMulti();
+  }
+  function drawMulti() {
+    const F = S.fit, m = F.sel === 'MX' ? 'R3' : F.sel, box = $('#fMulti');
+    const rows = F.per.map(q => ({ ...q, k: q.fits[m].prm.k, R2: q.fits[m].R2 }));
+    let h = `<h3>3. Varios ensayos – modelo ${esc(KM.MODELS[m].short)}</h3><div class="card"><table><tr><th>Ensayo</th><th class="num">T [°C]</th><th class="num">d [µm]</th><th class="num">Puntos</th><th class="num">k [h⁻¹]</th><th class="num">R²</th></tr>${rows.map(q => `<tr><td>${esc(q.id)}</td><td class="num">${q.T ?? '–'}</td><td class="num">${q.d ?? '–'}</td><td class="num">${q.n}</td><td class="num">${fmt(q.k, 5)}</td><td class="num">${fmt(q.R2, 4)}</td></tr>`).join('')}</table>`;
+    const Ts = rows.filter(q => q.T !== null), ds = rows.filter(q => q.d !== null);
+    let arr = null, siz = null;
+    if (new Set(Ts.map(q => q.T)).size >= 2) {
+      const x = Ts.map(q => 1 / (q.T + 273.15)), y = Ts.map(q => Math.log(q.k)); arr = KM.linreg(x, y);
+      h += `<p><b>Arrhenius (Ec. 1.6):</b> ln k = ln A − E/(RT) → E = ${fmt(-arr.slope * 8.314 / 1000, 2)} kJ/mol, A = ${fmt(Math.exp(arr.icpt), 3)} h⁻¹, R² = ${fmt(arr.R2, 4)}. ${badge(F.synthetic ? 'SIM' : 'AJU')}<br><span class="small muted">Referencia del libro (Cap. 6 p. 164): E bajos (≤ 20 kJ/mol) indican control por difusión; E de 40–400 kJ/mol, control por reacción interfacial.</span> <button class="btn sm" id="useE">Usar E en la simulación</button></p>`;
+    }
+    if (new Set(ds.map(q => q.d)).size >= 2) {
+      siz = KM.linreg(ds.map(q => Math.log10(q.d)), ds.map(q => Math.log10(q.k)));
+      h += `<p><b>Efecto del tamaño (Cap. 4 p. 93):</b> pendiente de log k vs log d = ${fmt(siz.slope, 2)} (R² ${fmt(siz.R2, 3)}). Interpretación: ≈ −1 control químico o de película; ≈ −2 difusión en capa de producto; ≈ 0 reacción interna total.</p>`;
+    }
+    h += `</div><div class="grid g2" style="margin-top:12px"><div id="fArr"></div><div id="fEns"></div></div>`;
+    box.innerHTML = h;
+    if (arr) {
+      lineChart($('#fArr'), { title: 'Gráfica de Arrhenius – ' + KM.MODELS[m].short, xLabel: '1000/T [K⁻¹]', yLabel: 'ln k [k en h⁻¹]', xName: '1000/T', yMin: undefined, series: [{ name: 'ln k ajustado', color: '#151513', type: 'scatter', x: Ts.map(q => 1000 / (q.T + 273.15)), y: Ts.map(q => Math.log(q.k)) }, { name: 'Regresión', color: HEX[m], x: Ts.map(q => 1000 / (q.T + 273.15)), y: Ts.map(q => arr.icpt + arr.slope / (q.T + 273.15)) }] });
+      const ue = $('#useE'); if (ue) ue.onclick = () => { const E = -arr.slope * 8.314 / 1000; const key = m === 'R3' ? 'E_R' : (m === 'GB' || m === 'JA') ? 'E_D' : 'E_E'; P[key] = +E.toFixed(2); syncInputs(); update(); toast(`${META[key].label} = ${fmt(E, 2)} kJ/mol`); };
+    }
+    const tt = KM.timeGrid(Math.max(...F.per.flatMap(q => S.data.filter(d => d.test === q.id).map(d => d.t))) * 1.05, 200);
+    lineChart($('#fEns'), { title: 'Ensayos y curvas ajustadas – ' + KM.MODELS[m].short, xLabel: 'Tiempo t [h]', yLabel: 'Extracción X [%]', xName: 't', xUnit: 'h', yMin: 0, yMax: 100, forceLegend: true, series: F.per.flatMap((q, i) => [{ name: 'Ensayo ' + q.id, color: SCN[i], type: 'scatter', x: S.data.filter(d => d.test === q.id).map(d => d.t), y: S.data.filter(d => d.test === q.id).map(d => d.X * 100) }, { name: 'Ajuste ' + q.id, color: SCN[i], x: tt, y: tt.map(t => KM.modelAlphaConst(m, t, q.fits[m].prm) * 100) }]) });
+  }
+
+  // ---------------- Módulo 7: Balances ----------------
+  function renderM7() {
+    const sec = $('#m7'); const { p, b, res } = R; const B = R.bal; const r = res[S.primary];
+    const planta = p.basis === 'planta';
+    const u = planta ? 'g/d' : 'g';
+    const rep = { feed: 1533, grav: 460, leachFeed: 1073, dissolved: 998, residue: 75, solLoss: 5, carbon: 993, ew: 968, smeltC: 966, gravDore: 451, prod: 1417, recovery: 92.4, residueGrade: 0.38 };
+    const checks = [];
+    const add = (ok, txt, lvl) => checks.push({ ok, txt, lvl: ok ? 'ok' : (lvl || 'bad') });
+    add(Math.abs(B.closureLeach) < 1e-6, `Cierre del balance de lixiviación: Au alimentado − disuelto − remanente = ${fmt(B.closureLeach, 9)} ${u}`);
+    add(Math.abs(B.closurePlant) < 1e-6, `Cierre del balance global: alimentado − gravimetría − disuelto − residuo = ${fmt(B.closurePlant, 9)} ${u}`);
+    add(r.maxErr < 1e-6, `Cierre punto a punto en toda la curva: error máximo = ${fmt(r.maxErr, 9)} g`);
+    let mono = true; for (let i = 1; i < r.X.length; i++) if (r.X[i] < r.X[i - 1] - 1e-12) mono = false;
+    add(mono, 'La extracción es monótona creciente en el tiempo');
+    add(Math.max(...r.X) <= 1 + 1e-12 && Math.min(...r.X) >= 0, 'Extracción dentro del rango físico 0–100 %');
+    add(B.solLoss <= B.dissolved, 'La pérdida en solución no supera el oro disuelto');
+    add(Math.abs(R.rhoP - 1 / (p.solidsPct / 100 / p.rhoS + (1 - p.solidsPct / 100) / p.rhoW)) < 1e-12 && p.solidsPct > 0 && p.solidsPct < 100, `Unidades de la pulpa coherentes: ρ = ${fmt(R.rhoP, 3)} t/m³ = kg/L (sólidos ${fmt(p.solidsPct, 0)} %)`);
+    add(Math.abs(b.water_m3 + b.ore_t / p.rhoS - b.pulp_m3) < 1e-9, `Volumen de pulpa = sólidos + solución: ${fmt(b.ore_t / p.rhoS, 2)} + ${fmt(b.water_m3, 2)} = ${fmt(b.pulp_m3, 2)} m³`);
+    if (planta) add(Math.abs(R.rt.tCIL - 16) < 0.5 || p.tpd !== D.tpd || p.nCIL !== D.nCIL || p.vCIL !== D.vCIL || p.solidsPct !== D.solidsPct, `Tiempo de residencia CIL = ${fmt(R.rt.tCIL, 2)} h (informe: 16 h)`, 'wr');
+    add(p.pH >= 10 && p.pH <= 12, `pH = ${fmt(p.pH, 1)}: ${p.pH < 10 ? 'por debajo de 10 hay riesgo de liberación de HCN (informe §2, §12)' : p.pH > 12 ? 'por encima de 12 la disolución se vuelve más lenta y la cal forma incrustaciones (informe §12)' : 'dentro del rango seguro 10–12'}`, p.pH < 10 ? 'bad' : 'wr');
+    add(!(p.cnProfile === 'lineal' && p.cnN < 0.15), `Cianuro libre en el último tanque ${fmt(p.cnProfile === 'lineal' ? p.cnN : p.cn1, 2)} g/L (el informe exige ≥ 0,15 g/L para que el oro no se desorba del carbón)`, 'wr');
+    add(p.o2 >= 6, `Oxígeno disuelto ${fmt(p.o2, 1)} mg/L (informe: 6–8 con aire)`, 'wr');
+    add(B.cnStoich_kg < 0.01 * (p.cn1 * b.water_m3), `Sin escasez de reactivo: el oro consume estequiométricamente ${fmt(B.cnStoich_kg, 3)} kg NaCN frente a ${fmt(p.cn1 * b.water_m3, 1)} kg en solución (Ec. 5.16; supuesto del Cap. 1 §1.1.2)`, 'wr');
+    add(!planta || B.residueGrade <= 0.38 + 1e-9, `Ley del residuo ${fmt(B.residueGrade, 3)} g/t (objetivo del informe ≤ 0,38 g/t)`, 'wr');
+    add(planta ? true : true, 'Las masas se calculan en gramos y los volúmenes en m³; C [mg/L] = g/m³. Conversiones verificadas en el módulo de pruebas.');
+    const row = (n, v, rv, src, note) => `<tr><td>${n}</td><td class="num">${v}</td><td class="num">${rv ?? ''}</td><td>${badge(src)}</td><td class="small muted">${note || ''}</td></tr>`;
+    sec.innerHTML = `<h2>Módulo 7 · Balances de materia</h2>
+    <p class="lead">Balance de oro calculado con la extracción del modelo principal (${esc(KM.MODELS[S.primary].short)}) al final de la lixiviación: X = ${fmt(r.Xend * 100, 2)} % ${badge(r.kp.src)}. La columna «Informe» reproduce el §13.2 para comparar.</p>
+    <div class="grid g2"><div class="card"><h3>Balance de oro${planta ? ' de la planta' : ' del lote'} [${u}]</h3><table><tr><th>Corriente</th><th class="num">Calculado</th><th class="num">Informe</th><th>Origen</th><th>Cálculo</th></tr>
+      ${row('Au alimentado con el mineral', fmt(B.feed, 1), planta ? rep.feed : '', 'CALC', `${fmt(b.ore_t, planta ? 0 : 4)} t × ${fmt(p.grade, 2)} g/t (el informe redondea a 1533)`)}
+      ${row('Au recuperado por gravimetría', fmt(B.grav, 1), planta ? rep.grav : '', 'CALC', `${fmt(p.gravPct, 0)} % del alimentado`)}
+      ${row('<b>Au que entra a lixiviación (m0)</b>', '<b>' + fmt(B.leachFeed, 1) + '</b>', planta ? rep.leachFeed : '', 'CALC', `ley ${fmt(B.leachGrade, 3)} g/t`)}
+      ${row('<b>Au disuelto (md)</b>', '<b>' + fmt(B.dissolved, 1) + '</b>', planta ? rep.dissolved : '', r.kp.src === 'SIM' ? 'SIM' : 'MOD', 'm0 · X(t lix.)')}
+      ${row('<b>Au remanente en el residuo sólido (mr)</b>', '<b>' + fmt(B.residue, 1) + '</b>', planta ? rep.residue : '', r.kp.src === 'SIM' ? 'SIM' : 'MOD', `m0 − md; ley ${fmt(B.residueGrade, 3)} g/t`)}
+      ${row('Cierre m0 − md − mr', fmt(B.closureLeach, 6), '0', 'CALC', 'debe ser 0')}
+      ${row('Au perdido en la solución del relave', fmt(B.solLoss, 2), planta ? rep.solLoss : '', 'CALC', `${fmt(p.solLoss_mgL, 3)} mg/L × ${fmt(b.water_m3, 1)} m³`)}
+      ${row('Au adsorbido en el carbón', fmt(B.carbon, 1), planta ? rep.carbon : '', 'CALC', 'md − pérdida en solución')}
+      ${row('Au en el eluato', fmt(B.elu, 1), '', 'CALC', `× ${fmt(p.effElu, 1)} % (el resto vuelve al circuito con el carbón)`)}
+      ${row('Au en la electrodeposición', fmt(B.ew, 1), planta ? rep.ew : '', 'CALC', `× ${fmt(p.effEW, 1)} %`)}
+      ${row('Doré, ruta carbón', fmt(B.smeltC, 1), planta ? rep.smeltC : '', 'CALC', `× ${fmt(p.effSmelt, 1)} %`)}
+      ${row('Doré, ruta gravimétrica', fmt(B.gravDore, 1), planta ? rep.gravDore : '', 'CALC', `× ${fmt(p.effGrav, 1)} % (el informe lo aplica sin fundición adicional)`)}
+      ${row('<b>Producción total de Au</b>', '<b>' + fmt(B.prod, 1) + '</b>', planta ? rep.prod : '', r.kp.src === 'SIM' ? 'SIM' : 'MOD', '')}
+      ${row('<b>Recuperación global</b>', '<b>' + fmt(B.recovery * 100, 2) + ' %</b>', planta ? rep.recovery + ' %' : '', r.kp.src === 'SIM' ? 'SIM' : 'MOD', 'producción / alimentado')}
+      ${planta ? row('Carbón cargado a retirar', fmt(B.carbonPerDay, 3) + ' t/d', '0,33 t/d', 'CALC', `Au al carbón / ${fmt(p.carbonLoad, 0)} g/t`) : ''}
+      </table></div>
+      <div class="card"><h3>Verificaciones automáticas</h3><ul class="checks">${checks.map(c => `<li><span class="${c.lvl === 'ok' ? 'okk' : c.lvl === 'wr' ? 'wr' : 'bd'}">${c.lvl === 'ok' ? '✓' : c.lvl === 'wr' ? '⚠' : '✗'}</span> ${esc(c.txt)}</li>`).join('')}</ul>
+      <div id="balChart" style="margin-top:10px"></div></div></div>
+    <h3>Corrientes de la lixiviación ${planta ? '(planta, por día)' : '(lote)'}</h3>
+    <div class="grid g2"><div class="card"><b>Entradas</b><table><tr><th>Corriente</th><th class="num">Sólidos</th><th class="num">Solución</th><th class="num">Au</th><th>Origen</th></tr>
+      <tr><td>Pulpa espesada y diluida al ${fmt(p.solidsPct, 0)} %</td><td class="num">${fmt(b.ore_t, planta ? 1 : 4)} t</td><td class="num">${fmt(b.water_m3, planta ? 1 : 5)} m³</td><td class="num">${fmt(B.leachFeed, 1)} g</td><td>${badge('CALC')}</td></tr>
+      <tr><td>Cianuro de sodio</td><td colspan="3" class="num">${planta ? '160 kg/d (0,8 kg/t)' : '–'}</td><td>${badge('INF')}</td></tr>
+      <tr><td>Cal viva (CaO)</td><td colspan="3" class="num">${planta ? '1,5 kg/t (informe)' : '–'}</td><td>${badge('INF')}</td></tr>
+      <tr><td>Aire / oxígeno</td><td colspan="3" class="num">OD ${fmt(p.o2, 1)} mg/L mantenido</td><td>${badge('INF')}</td></tr>
+      <tr><td>Carbón activado (inventario)</td><td colspan="3" class="num">${planta ? fmt(p.nCIL * p.vCIL * p.carbonConc / 1000, 2) + ' t en el CIL' : '–'}</td><td>${badge('CALC')}</td></tr></table></div>
+      <div class="card"><b>Salidas</b><table><tr><th>Corriente</th><th class="num">Sólidos</th><th class="num">Solución</th><th class="num">Au</th><th>Origen</th></tr>
+      <tr><td>Relave (a detoxificación INCO)</td><td class="num">${fmt(b.ore_t, planta ? 1 : 4)} t</td><td class="num">${fmt(b.water_m3, planta ? 1 : 5)} m³</td><td class="num">${fmt(B.residue + B.solLoss, 2)} g</td><td>${badge(r.kp.src === 'SIM' ? 'SIM' : 'MOD')}</td></tr>
+      <tr><td>Carbón cargado a elución</td><td class="num">${planta ? fmt(B.carbonPerDay, 3) + ' t' : '–'}</td><td class="num">–</td><td class="num">${fmt(B.carbon, 1)} g</td><td>${badge(r.kp.src === 'SIM' ? 'SIM' : 'MOD')}</td></tr>
+      <tr><td>Cianuro WAD con el relave</td><td colspan="3" class="num">${planta ? '69 kg/d como NaCN (informe)' : '–'}</td><td>${badge('INF')}</td></tr>
+      <tr><td>Cianuro consumido en reacciones laterales</td><td colspan="3" class="num">${planta ? '91 kg/d (informe; no se puede verificar sin la mineralogía)' : '–'}</td><td>${badge('INF')}</td></tr>
+      <tr><td>Cianuro consumido por el oro (estequiométrico, Ec. 5.16)</td><td colspan="3" class="num">${fmt(B.cnStoich_kg, 3)} kg NaCN</td><td>${badge('CALC')}</td></tr></table></div></div>
+    ${planta ? `<h3>Balance de agua y roca del informe (§13.1)</h3><div class="card small"><table><tr><th>Punto</th><th class="num">Sólidos [t/d]</th><th class="num">Agua [m³/d]</th><th class="num">% sólidos</th><th>Origen</th></tr>
+      <tr><td>Alimentación fresca (humedad 4 %)</td><td class="num">200</td><td class="num">8</td><td class="num">96</td><td>${badge('INF')}</td></tr>
+      <tr><td>Descarga del molino (carga circulante 250 %)</td><td class="num">700</td><td class="num">300</td><td class="num">70</td><td>${badge('INF')}</td></tr>
+      <tr><td>Alimentación a ciclones</td><td class="num">700</td><td class="num">538</td><td class="num">57</td><td>${badge('INF')}</td></tr>
+      <tr><td>Rebose de ciclones</td><td class="num">200</td><td class="num">371</td><td class="num">35</td><td>${badge('INF')}</td></tr>
+      <tr><td>Descarga del espesador (recupera 208 m³/d)</td><td class="num">200</td><td class="num">164</td><td class="num">55</td><td>${badge('INF')}</td></tr>
+      <tr><td>Alimentación a lixiviación (+ 81 m³/d)</td><td class="num">${fmt(b.ore_t, 0)}</td><td class="num">${fmt(b.water_m3, 1)}</td><td class="num">${fmt(p.solidsPct, 0)}</td><td>${badge('CALC')} informe: 244</td></tr></table>
+      <p class="muted">El balance completo de cianuro, cal y especies disueltas no puede cerrarse con los datos disponibles: harían falta la mineralogía (pirita 18 %), la estequiometría de las reacciones laterales y las mediciones de WAD. Se presentan las cifras del informe sin recalcularlas.</p></div>` : ''}`;
+    const bars = [['Gravimetría → doré', B.gravDore], ['Carbón → doré', B.smeltC], ['Residuo sólido', B.residue], ['Solución del relave', B.solLoss], ['Pérdidas elución/EW/fundición y gravimetría', B.feed - B.prod - B.residue - B.solLoss]];
+    $('#balChart').innerHTML = `<b class="small">Destino del oro alimentado</b>` + bars.map(([n, v], i) => `<div class="small" style="display:grid;grid-template-columns:200px 1fr 70px;gap:8px;align-items:center;margin:4px 0"><span>${n}</span><span style="height:12px;border-radius:0 4px 4px 0;background:${SCN[i]};width:${Math.max(0.5, v / B.feed * 100)}%"></span><span class="num">${fmt(v / B.feed * 100, 2)} %</span></div>`).join('');
+  }
+
+  // ---------------- Módulo 8: Resultados y exportación ----------------
+  function paramRows() {
+    const rows = [['Parámetro', 'Valor', 'Unidad', 'Procedencia', 'Referencia']];
+    rows.push(['Base de cálculo', P.basis, '', 'USR', '']); rows.push(['Base de cianuro', P.cnBasis, '', 'USR', 'ambigüedad del informe']); rows.push(['Perfil de cianuro', P.cnProfile, '', 'USR', '']); rows.push(['Prelixiviación cuenta como lixiviación', String(P.prelixCounts), '', 'USR', '']);
+    for (const k in META) rows.push([META[k].label, P[k], META[k].unit, META[k].src, META[k].ref]);
+    ORDER.forEach(m => { const q = R.res[m]; if (!q) return; rows.push([`Constante ${m} (${q.kp.note})`, m === 'MX' ? `kR=${q.kp.kR}; kD=${q.kp.kD}` : (q.kp.mode === 'habashi' ? q.kEff[0] : q.kp.k), 'h^-1', q.kp.src, KM.MODELS[m].ref]); });
+    rows.push(['D_CN', KM.CONST.D_CN, 'cm2/s', 'LIB', 'Cap. 5 p. 127']); rows.push(['D_O2', KM.CONST.D_O2, 'cm2/s', 'LIB', 'Cap. 5 p. 127']);
+    rows.push(['M_Au', KM.CONST.M_Au, 'g/mol', 'CONST', '']); rows.push(['rho_Au', KM.CONST.rho_Au, 'g/cm3', 'CONST', '']);
+    return rows;
+  }
+  function simRows(m) {
+    const q = R.res[m], { ts, p } = R; const rows = [['t_h', 'X_pct', 'alpha', 'm_disuelta_g', 'm_remanente_g', 'C_eq_mg_L', 'dXdt_pct_h', 'dmdt_g_h', 'k_h-1', 'CN_g_L', 'origen']];
+    for (let i = 0; i < ts.length; i += 2) rows.push([ts[i], q.X[i] * 100, q.alpha[i], q.mDis[i], q.mRes[i], q.C[i], q.rate[i] * p.alphaInf * 100, q.rate[i] * p.alphaInf * R.b.auLeach, q.kEff[i], KM.cnAt(ts[i], p), UI.SRC_LABEL[q.kp.src]]);
+    return rows;
+  }
+  function compRows() {
+    const en = Object.keys(R.res).filter(m => S.enabled[m] || m === S.primary); const rows = [['t_h', ...en.map(m => 'X_' + m + '_pct')]];
+    for (let i = 0; i < R.ts.length; i += 2) rows.push([R.ts[i], ...en.map(m => R.res[m].X[i] * 100)]);
+    return rows;
+  }
+  function balRows() {
+    const B = R.bal; return [['Corriente', 'Valor', 'Unidad'], ['Au alimentado', B.feed, 'g'], ['Au gravimetría', B.grav, 'g'], ['Au a lixiviación', B.leachFeed, 'g'], ['Au disuelto', B.dissolved, 'g'], ['Au remanente en sólido', B.residue, 'g'], ['Ley del residuo', B.residueGrade, 'g/t'], ['Cierre lixiviación', B.closureLeach, 'g'], ['Pérdida en solución', B.solLoss, 'g'], ['Au al carbón', B.carbon, 'g'], ['Eluato', B.elu, 'g'], ['Electrodeposición', B.ew, 'g'], ['Doré ruta carbón', B.smeltC, 'g'], ['Doré gravimétrico', B.gravDore, 'g'], ['Producción total', B.prod, 'g'], ['Recuperación global', B.recovery * 100, '%'], ['Agua de lixiviación', B.water, 'm3'], ['Pulpa', B.pulp, 'm3'], ['Base', R.p.basis === 'planta' ? 'por día de alimentación' : 'lote', '']];
+  }
+  function summaryText() {
+    const { p, res, rt, b, reg } = R; const q = res[S.primary]; const M = KM.MODELS[S.primary]; const B = R.bal;
+    const src = q.kp.src === 'SIM' ? 'SIMULACIÓN EXPLORATORIA SIN CALIBRACIÓN EXPERIMENTAL (constante anclada a la extracción de diseño supuesta en el informe)' : q.kp.src === 'AJU' ? 'constante AJUSTADA a datos del usuario' : q.kp.src === 'MOD' ? 'constante estimada a priori con la Ec. 5.23 (parámetros hipotéticos)' : 'constante introducida manualmente';
+    const others = Object.values(res).filter(r => r.m !== S.primary && S.enabled[r.m]).map(r => `${KM.MODELS[r.m].short}: ${fmt(r.Xend * 100, 1)} %`).join('; ');
+    return `RESUMEN TÉCNICO – SIMULACIÓN CINÉTICA DE LA LIXIVIACIÓN DE ORO
+Fecha: ${new Date().toLocaleString('es-CO')}
+Fundamento: H.S. Ray & S. Ray, Kinetics of Metallurgical Processes (2018), caps. 1–6; informe técnico de la planta CIL de 200 t/d.
+
+1. Condiciones simuladas
+- Base: ${p.basis === 'planta' ? `planta continua, ${fmt(p.tpd, 0)} t/d, flujo pistón; tiempo de lixiviación ${fmt(p.tLeach, 2)} h (CIL ${fmt(rt.tCIL, 2)} h${p.prelixCounts ? ' + prelixiviación ' + fmt(rt.tPre, 2) + ' h' : ''})` : `lote de ${fmt(p.batchKg, 2)} kg durante ${fmt(p.batchHours, 1)} h`}.
+- Mineral: ${fmt(p.grade, 2)} g/t Au; gravimetría previa ${fmt(p.gravPct, 0)} %; P80 ${fmt(p.P80_um, 0)} µm; grano de Au supuesto ${fmt(p.dAu_um, 1)} µm (hipotético).
+- Pulpa: ${fmt(p.solidsPct, 0)} % sólidos (ρ = ${fmt(R.rhoP, 3)} t/m³); pH ${fmt(p.pH, 1)}; NaCN libre ${fmt(p.cn1, 2)} → ${fmt(p.cnProfile === 'lineal' ? p.cnN : p.cn1, 2)} g/L (${p.cnBasis}); OD ${fmt(p.o2, 1)} mg/L; T ${fmt(p.T_C, 1)} °C; δ ${fmt(p.delta_um, 0)} µm.
+- Régimen electroquímico (Ec. 5.23–5.26): [CN⁻]/[O₂] = ${fmt(reg.ratio, 1)} frente al valor crítico ${fmt(reg.crit, 1)} → ${reg.label}.
+
+2. Modelo seleccionado
+- ${M.name}: ${M.eq} (${M.ref}).
+- Constante: ${q.kp.mode === 'habashi' ? 'k(0) = ' + fmt(q.kEff[0], 5) : S.primary === 'MX' ? 'kR = ' + fmt(q.kp.kR, 5) + ', kD = ' + fmt(q.kp.kD, 5) : 'k = ' + fmt(q.kp.k, 5)} h⁻¹ – ${src}.
+
+3. Resultados principales (fin de la lixiviación)
+- Extracción de oro: ${fmt(q.Xend * 100, 2)} %; t50 = ${q.t50 ? fmt(q.t50, 2) : '–'} h; t90 = ${q.t90 ? fmt(q.t90, 2) : '> horizonte'} h.
+- Au a lixiviación ${fmt(b.auLeach, 1)} g = disuelto ${fmt(B.dissolved, 1)} g + remanente ${fmt(B.residue, 1)} g (cierre ${fmt(B.closureLeach, 6)} g); ley del residuo ${fmt(B.residueGrade, 3)} g/t.
+- Concentración equivalente de Au (sin adsorción): ${fmt(interp(R.ts, q.C, p.tLeach), 3)} mg/L.
+${p.basis === 'planta' ? `- Producción total ${fmt(B.prod, 1)} g/d; recuperación global ${fmt(B.recovery * 100, 2)} % (informe: 1417 g/d; 92,4 %).` : ''}
+- Otros modelos comparados: ${others || 'ninguno'}.
+
+4. Advertencias
+${q.warn.map(w => '- ' + w).join('\n') || '- Ninguna específica del modelo.'}
+- El informe no contiene datos cinéticos experimentales; sin ensayos de botella con muestreo en el tiempo, ninguno de los modelos puede considerarse validado.
+- Simplificaciones: conjunto monodisperso, flujo pistón en la cascada, [O₂] constante, sin efecto de la temperatura sobre la solubilidad del O₂ y sin adsorción explícita en el carbón.
+`;
+  }
+  function renderM8() {
+    const sec = $('#m8');
+    sec.innerHTML = `<h2>Módulo 8 · Resultados y exportación</h2>
+    <p class="lead">Resumen técnico de la configuración actual y descarga de resultados. Si el visor no permite descargas, use los botones «Copiar».</p>
+    <div class="card"><div class="row">
+      <button class="btn primary" id="xX">Libro Excel (.xlsx) completo</button>
+      <button class="btn" id="xS">CSV: simulación del modelo principal</button>
+      <button class="btn" id="xC">CSV: comparación de modelos</button>
+      <button class="btn" id="xP">CSV: parámetros utilizados</button>
+      <button class="btn" id="xB">CSV: balance de materia</button>
+      <button class="btn" id="xR">Resumen técnico (.md)</button>
+      <button class="btn" id="cS">Copiar CSV de la simulación</button>
+      <button class="btn" id="cR">Copiar resumen</button></div>
+      <p class="small muted">Las gráficas se exportan una por una con los botones SVG/PNG del módulo 4. Los CSV usan coma como separador y punto como decimal.</p></div>
+    <h3>Resumen técnico</h3><div class="card"><pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;margin:0" id="sumTxt">${esc(summaryText())}</pre></div>
+    <h3>Parámetros utilizados</h3><div class="tablewrap"><table>${paramRows().map((r, i) => `<tr>${r.map(c => i ? `<td>${esc(typeof c === 'number' ? fmt(c, Math.abs(c) < 1 ? 4 : 2) : c)}</td>` : `<th>${esc(c)}</th>`).join('')}</tr>`).join('')}</table></div>`;
+    const stamp = new Date().toISOString().slice(0, 10);
+    $('#xS').onclick = () => saveFile(`simulacion_${S.primary}_${stamp}.csv`, toCSV(simRows(S.primary)), 'text/csv');
+    $('#xC').onclick = () => saveFile(`comparacion_modelos_${stamp}.csv`, toCSV(compRows()), 'text/csv');
+    $('#xP').onclick = () => saveFile(`parametros_${stamp}.csv`, toCSV(paramRows()), 'text/csv');
+    $('#xB').onclick = () => saveFile(`balance_oro_${stamp}.csv`, toCSV(balRows()), 'text/csv');
+    $('#xR').onclick = () => saveFile(`resumen_tecnico_${stamp}.md`, summaryText(), 'text/markdown');
+    $('#cS').onclick = () => copyText(toCSV(simRows(S.primary)));
+    $('#cR').onclick = () => copyText(summaryText());
+    $('#xX').onclick = () => {
+      const sheets = [{ name: 'Resumen', rows: [['Resumen técnico'], ...summaryText().split('\n').map(l => [l])] }, { name: 'Parametros', rows: paramRows() }, { name: 'Simulacion_' + S.primary, rows: simRows(S.primary) }, { name: 'Comparacion', rows: compRows() }, { name: 'Balance', rows: balRows() }];
+      if (S.fit) sheets.push({ name: 'Ajuste', rows: [['Modelo', 'Parametros', 'R2', 'R2aj', 'RMSE_pct', 'AIC', 'Datos'], ...S.fit.fits.map(f => [f.modelId, prmText(f), f.R2, f.R2adj, f.RMSE * 100, f.AIC, S.fit.synthetic ? 'SINTETICOS' : 'usuario'])] });
+      if (S.scenarios.length) sheets.push({ name: 'Escenarios', rows: [['Escenario', 'Modelo', 't_lix_h', 'X_pct', 'Produccion_g_d', 'Recuperacion_pct'], ...S.scenarios.map(s => [s.name, s.model, s.tLeach, s.Xend * 100, s.prod, s.rec * 100])] });
+      saveFile(`lixiviacion_oro_${stamp}.xlsx`, xlsx(sheets), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    };
+  }
+
+  // ---------------- Navegación y ciclo ----------------
+  const TABS = [['m1', 'Parámetros'], ['m2', 'Modelos'], ['m3', 'Simulación'], ['m4', 'Gráficas'], ['m5', 'Escenarios'], ['m6', 'Ajuste'], ['m7', 'Balances'], ['m8', 'Resultados'], ['m9', 'Ayuda']];
+  function renderNav() {
+    $('#tabs').innerHTML = TABS.map(([id, n], i) => `<button data-t="${id}" class="${S.tab === id ? 'on' : ''}"><span class="n">${i < 8 ? i + 1 : '?'}</span>${n}</button>`).join('');
+    $$('#tabs button').forEach(b => b.onclick = () => { S.tab = b.dataset.t; try { history.replaceState(null, '', '#' + S.tab); } catch (e) { } show(); });
+  }
+  function show() { $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === S.tab)); $$('section.mod').forEach(s => s.classList.toggle('on', s.id === S.tab)); renderActive(); }
+  function renderActive() {
+    const t = S.tab;
+    if (t === 'm1') renderM1calc(); else if (t === 'm2') renderM2(); else if (t === 'm3') renderM3(); else if (t === 'm4') renderM4(); else if (t === 'm5') renderM5(); else if (t === 'm6') renderM6(); else if (t === 'm7') renderM7(); else if (t === 'm8') renderM8();
+    const q = R.res[S.primary];
+    $('#statusbar').innerHTML = `Modelo principal: <b style="color:${HEX[S.primary]}">${esc(KM.MODELS[S.primary].short)}</b> · X(t lix. = ${fmt(R.p.tLeach, 2)} h) = <b>${fmt(q.Xend * 100, 2)} %</b> ${badge(q.kp.src)} · ${esc(R.reg.label)}`;
+  }
+  let pend = null;
+  function update() { if (pend) cancelAnimationFrame(pend); pend = requestAnimationFrame(() => { pend = null; compute(); renderActive(); }); }
+
+  function init() {
+    UI.initDownloads();
+    const h = (location.hash || '').slice(1); if (TABS.some(t => t[0] === h)) S.tab = h;
+    compute(); renderNav(); renderM1(); show();
+    let rz = null; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (['m4', 'm5', 'm6', 'm7'].includes(S.tab)) renderActive(); }, 250); });
+    window.addEventListener('hashchange', () => { const h = location.hash.slice(1); if (TABS.some(t => t[0] === h)) { S.tab = h; show(); } });
+  }
+  window.APP = { P, S, compute, get R() { return R; } };
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
