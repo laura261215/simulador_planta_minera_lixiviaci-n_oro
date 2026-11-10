@@ -1,0 +1,1 @@
+# simulador_planta_minera_lixiviaci-n_oro
